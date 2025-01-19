@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ package org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.micrometer.prometheus.HistogramFlavor;
 
 import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusPushGatewayManager.ShutdownOperation;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -54,9 +52,9 @@ public class PrometheusProperties {
 	private final Pushgateway pushgateway = new Pushgateway();
 
 	/**
-	 * Histogram type for backing DistributionSummary and Timer.
+	 * Additional properties to pass to the Prometheus client.
 	 */
-	private HistogramFlavor histogramFlavor = HistogramFlavor.Prometheus;
+	private final Map<String, String> properties = new HashMap<>();
 
 	/**
 	 * Step size (i.e. reporting frequency) to use.
@@ -69,14 +67,6 @@ public class PrometheusProperties {
 
 	public void setDescriptions(boolean descriptions) {
 		this.descriptions = descriptions;
-	}
-
-	public HistogramFlavor getHistogramFlavor() {
-		return this.histogramFlavor;
-	}
-
-	public void setHistogramFlavor(HistogramFlavor histogramFlavor) {
-		this.histogramFlavor = histogramFlavor;
 	}
 
 	public Duration getStep() {
@@ -97,6 +87,10 @@ public class PrometheusProperties {
 
 	public Pushgateway getPushgateway() {
 		return this.pushgateway;
+	}
+
+	public Map<String, String> getProperties() {
+		return this.properties;
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class RabbitAutoConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(RabbitConnectionDetails.class)
+		@ConditionalOnMissingBean
 		RabbitConnectionDetails rabbitConnectionDetails() {
 			return new PropertiesRabbitConnectionDetails(this.properties);
 		}
@@ -123,17 +123,14 @@ public class RabbitAutoConfiguration {
 				RabbitConnectionFactoryBeanConfigurer rabbitConnectionFactoryBeanConfigurer,
 				CachingConnectionFactoryConfigurer rabbitCachingConnectionFactoryConfigurer,
 				ObjectProvider<ConnectionFactoryCustomizer> connectionFactoryCustomizers) throws Exception {
-
 			RabbitConnectionFactoryBean connectionFactoryBean = new SslBundleRabbitConnectionFactoryBean();
 			rabbitConnectionFactoryBeanConfigurer.configure(connectionFactoryBean);
 			connectionFactoryBean.afterPropertiesSet();
 			com.rabbitmq.client.ConnectionFactory connectionFactory = connectionFactoryBean.getObject();
 			connectionFactoryCustomizers.orderedStream()
 				.forEach((customizer) -> customizer.customize(connectionFactory));
-
 			CachingConnectionFactory factory = new CachingConnectionFactory(connectionFactory);
 			rabbitCachingConnectionFactoryConfigurer.configure(factory);
-
 			return factory;
 		}
 
@@ -167,7 +164,7 @@ public class RabbitAutoConfiguration {
 
 		@Bean
 		@ConditionalOnSingleCandidate(ConnectionFactory.class)
-		@ConditionalOnProperty(prefix = "spring.rabbitmq", name = "dynamic", matchIfMissing = true)
+		@ConditionalOnProperty(name = "spring.rabbitmq.dynamic", matchIfMissing = true)
 		@ConditionalOnMissingBean
 		public AmqpAdmin amqpAdmin(ConnectionFactory connectionFactory) {
 			return new RabbitAdmin(connectionFactory);

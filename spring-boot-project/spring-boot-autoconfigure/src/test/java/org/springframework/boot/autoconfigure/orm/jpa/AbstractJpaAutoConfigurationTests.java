@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConf
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizationAutoConfiguration;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.ContextConsumer;
@@ -54,6 +55,7 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager;
+import org.springframework.orm.jpa.persistenceunit.ManagedClassNameFilter;
 import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes;
 import org.springframework.orm.jpa.persistenceunit.PersistenceUnitManager;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
@@ -69,6 +71,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  * @author Dave Syer
  * @author Stephane Nicoll
+ * @author Yanming Zhou
  */
 abstract class AbstractJpaAutoConfigurationTests {
 
@@ -206,6 +209,18 @@ abstract class AbstractJpaAutoConfigurationTests {
 	}
 
 	@Test
+	void usesManuallyDefinedLocalContainerEntityManagerFactoryBeanUsingBuilder() {
+		this.contextRunner.withPropertyValues("spring.jpa.properties.a=b")
+			.withUserConfiguration(TestConfigurationWithEntityManagerFactoryBuilder.class)
+			.run((context) -> {
+				LocalContainerEntityManagerFactoryBean factoryBean = context
+					.getBean(LocalContainerEntityManagerFactoryBean.class);
+				Map<String, Object> map = factoryBean.getJpaPropertyMap();
+				assertThat(map).containsEntry("configured", "manually").containsEntry("a", "b");
+			});
+	}
+
+	@Test
 	void usesManuallyDefinedLocalContainerEntityManagerFactoryBeanIfAvailable() {
 		this.contextRunner.withUserConfiguration(TestConfigurationWithLocalContainerEntityManagerFactoryBean.class)
 			.run((context) -> {
@@ -276,6 +291,16 @@ abstract class AbstractJpaAutoConfigurationTests {
 				assertThat(persistenceUnitInfo).isNotNull();
 				assertThat(persistenceUnitInfo.getManagedClassNames())
 					.contains("customized.attribute.converter.class.name");
+			});
+	}
+
+	@Test
+	void customManagedClassNameFilter() {
+		this.contextRunner.withBean(ManagedClassNameFilter.class, () -> (s) -> !s.endsWith("City"))
+			.withUserConfiguration(AutoConfigurePackageForCountry.class)
+			.run((context) -> {
+				EntityManager entityManager = context.getBean(EntityManagerFactory.class).createEntityManager();
+				assertThat(getManagedJavaTypes(entityManager)).contains(Country.class).doesNotContain(City.class);
 			});
 	}
 
@@ -369,6 +394,17 @@ abstract class AbstractJpaAutoConfigurationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
+	static class TestConfigurationWithEntityManagerFactoryBuilder extends TestConfiguration {
+
+		@Bean
+		LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(EntityManagerFactoryBuilder builder,
+				DataSource dataSource) {
+			return builder.dataSource(dataSource).properties(Map.of("configured", "manually")).build();
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
 	static class TestConfigurationWithLocalContainerEntityManagerFactoryBean extends TestConfiguration {
 
 		@Bean
@@ -420,6 +456,12 @@ abstract class AbstractJpaAutoConfigurationTests {
 		TransactionManager testTransactionManager() {
 			return new CustomJpaTransactionManager();
 		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@TestAutoConfigurationPackage(Country.class)
+	static class AutoConfigurePackageForCountry {
 
 	}
 

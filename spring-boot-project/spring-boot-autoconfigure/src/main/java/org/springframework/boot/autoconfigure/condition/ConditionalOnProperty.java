@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,7 @@ import org.springframework.core.env.Environment;
  * @author Stephane Nicoll
  * @author Phillip Webb
  * @since 1.1.0
+ * @see ConditionalOnBooleanProperty
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
@@ -117,6 +118,9 @@ public @interface ConditionalOnProperty {
 	 * <p>
 	 * Use the dashed notation to specify each property, that is all lower case with a "-"
 	 * to separate words (e.g. {@code my-long-property}).
+	 * <p>
+	 * If multiple names are specified, all of the properties have to pass the test for
+	 * the condition to match.
 	 * @return the names
 	 */
 	String[] name() default {};

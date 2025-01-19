@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.springframework.boot.ssl.pem;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,9 +28,10 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
-import org.springframework.util.ResourceUtils;
 import org.springframework.util.StreamUtils;
 
 /**
@@ -51,7 +51,7 @@ public final class PemContent {
 	private final String text;
 
 	private PemContent(String text) {
-		this.text = text;
+		this.text = text.lines().map(String::trim).collect(Collectors.joining("\n"));
 	}
 
 	/**
@@ -108,10 +108,11 @@ public final class PemContent {
 	 * Load {@link PemContent} from the given content (either the PEM content itself or a
 	 * reference to the resource to load).
 	 * @param content the content to load
+	 * @param resourceLoader the resource loader used to load content
 	 * @return a new {@link PemContent} instance
 	 * @throws IOException on IO error
 	 */
-	static PemContent load(String content) throws IOException {
+	static PemContent load(String content, ResourceLoader resourceLoader) throws IOException {
 		if (content == null) {
 			return null;
 		}
@@ -119,7 +120,7 @@ public final class PemContent {
 			return new PemContent(content);
 		}
 		try {
-			return load(ResourceUtils.getURL(content));
+			return load(resourceLoader.getResource(content).getInputStream());
 		}
 		catch (IOException | UncheckedIOException ex) {
 			throw new IOException("Error reading certificate or key from file '%s'".formatted(content), ex);
@@ -133,20 +134,19 @@ public final class PemContent {
 	 * @throws IOException on IO error
 	 */
 	public static PemContent load(Path path) throws IOException {
-		Assert.notNull(path, "Path must not be null");
+		Assert.notNull(path, "'path' must not be null");
 		try (InputStream in = Files.newInputStream(path, StandardOpenOption.READ)) {
 			return load(in);
 		}
 	}
 
-	private static PemContent load(URL url) throws IOException {
-		Assert.notNull(url, "Url must not be null");
-		try (InputStream in = url.openStream()) {
-			return load(in);
-		}
-	}
-
-	private static PemContent load(InputStream in) throws IOException {
+	/**
+	 * Load {@link PemContent} from the given {@link InputStream}.
+	 * @param in an input stream to load the content from
+	 * @return the loaded PEM content
+	 * @throws IOException on IO error
+	 */
+	public static PemContent load(InputStream in) throws IOException {
 		return of(StreamUtils.copyToString(in, StandardCharsets.UTF_8));
 	}
 

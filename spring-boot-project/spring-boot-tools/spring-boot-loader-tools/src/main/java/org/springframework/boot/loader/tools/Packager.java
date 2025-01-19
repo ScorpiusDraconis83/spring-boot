@@ -72,6 +72,10 @@ public abstract class Packager {
 
 	private static final String BOOT_LAYERS_INDEX_ATTRIBUTE = "Spring-Boot-Layers-Index";
 
+	private static final String SBOM_LOCATION_ATTRIBUTE = "Sbom-Location";
+
+	private static final String SBOM_FORMAT_ATTRIBUTE = "Sbom-Format";
+
 	private static final byte[] ZIP_FILE_HEADER = new byte[] { 'P', 'K', 3, 4 };
 
 	private static final long FIND_WARNING_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
@@ -264,6 +268,12 @@ public abstract class Packager {
 		}
 	}
 
+	/**
+	 * Writes a signature file if necessary for the given {@code writtenLibraries}.
+	 * @param writtenLibraries the libraries
+	 * @param writer the writer to use to write the signature file if necessary
+	 * @throws IOException if a failure occurs when writing the signature file
+	 */
 	protected void writeSignatureFileIfNecessary(Map<String, Library> writtenLibraries, AbstractJarWriter writer)
 			throws IOException {
 	}
@@ -299,6 +309,7 @@ public abstract class Packager {
 		Manifest manifest = createInitialManifest(source);
 		addMainAndStartAttributes(source, manifest);
 		addBootAttributes(manifest.getMainAttributes());
+		addSbomAttributes(source, manifest.getMainAttributes());
 		return manifest;
 	}
 
@@ -408,6 +419,21 @@ public abstract class Packager {
 		}
 	}
 
+	private void addSbomAttributes(JarFile source, Attributes attributes) {
+		JarEntry sbomEntry = source.stream().filter(this::isCycloneDxBom).findAny().orElse(null);
+		if (sbomEntry != null) {
+			attributes.putValue(SBOM_LOCATION_ATTRIBUTE, sbomEntry.getName());
+			attributes.putValue(SBOM_FORMAT_ATTRIBUTE, "CycloneDX");
+		}
+	}
+
+	private boolean isCycloneDxBom(JarEntry entry) {
+		if (!entry.getName().startsWith("META-INF/sbom/")) {
+			return false;
+		}
+		return entry.getName().endsWith(".cdx.json") || entry.getName().endsWith("/bom.json");
+	}
+
 	private void putIfHasLength(Attributes attributes, String name, String value) {
 		if (StringUtils.hasLength(value)) {
 			attributes.putValue(name, value);
@@ -511,8 +537,8 @@ public abstract class Packager {
 					addLibrary(library);
 				}
 			});
-			if (isLayered() && Packager.this.includeRelevantJarModeJars) {
-				addLibrary(JarModeLibrary.LAYER_TOOLS);
+			if (Packager.this.includeRelevantJarModeJars) {
+				addLibrary(JarModeLibrary.TOOLS);
 			}
 			this.unpackHandler = new PackagedLibrariesUnpackHandler();
 			this.libraryLookup = this::lookup;

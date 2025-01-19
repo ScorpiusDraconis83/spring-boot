@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,6 @@ import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointAu
 import org.springframework.boot.actuate.autoconfigure.web.server.ManagementContextAutoConfiguration;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
-import org.springframework.boot.actuate.endpoint.web.EndpointServlet;
-import org.springframework.boot.actuate.endpoint.web.annotation.ServletEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -177,12 +175,14 @@ abstract class AbstractEndpointRequestIntegrationTests {
 
 	}
 
-	@ServletEndpoint(id = "se1")
-	static class TestServletEndpoint implements Supplier<EndpointServlet> {
+	@org.springframework.boot.actuate.endpoint.web.annotation.ServletEndpoint(id = "se1")
+	@SuppressWarnings({ "deprecation", "removal" })
+	static class TestServletEndpoint
+			implements Supplier<org.springframework.boot.actuate.endpoint.web.EndpointServlet> {
 
 		@Override
-		public EndpointServlet get() {
-			return new EndpointServlet(ExampleServlet.class);
+		public org.springframework.boot.actuate.endpoint.web.EndpointServlet get() {
+			return new org.springframework.boot.actuate.endpoint.web.EndpointServlet(ExampleServlet.class);
 		}
 
 	}

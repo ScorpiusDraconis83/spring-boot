@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,31 +18,48 @@ package org.springframework.boot.autoconfigure.web.client;
 
 import java.util.List;
 
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
+import org.springframework.boot.http.client.ClientHttpRequestFactorySettings;
 import org.springframework.boot.web.client.RestClientCustomizer;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClient.Builder;
 
 /**
- * Configure {@link RestClient.Builder} with sensible defaults.
+ * Configure {@link Builder RestClient.Builder} with sensible defaults.
  *
  * @author Moritz Halbritter
  * @since 3.2.0
  */
 public class RestClientBuilderConfigurer {
 
+	private ClientHttpRequestFactoryBuilder<?> requestFactoryBuilder;
+
+	private ClientHttpRequestFactorySettings requestFactorySettings;
+
 	private List<RestClientCustomizer> customizers;
+
+	void setRequestFactoryBuilder(ClientHttpRequestFactoryBuilder<?> requestFactoryBuilder) {
+		this.requestFactoryBuilder = requestFactoryBuilder;
+	}
+
+	void setRequestFactorySettings(ClientHttpRequestFactorySettings requestFactorySettings) {
+		this.requestFactorySettings = requestFactorySettings;
+	}
 
 	void setRestClientCustomizers(List<RestClientCustomizer> customizers) {
 		this.customizers = customizers;
 	}
 
 	/**
-	 * Configure the specified {@link RestClient.Builder}. The builder can be further
-	 * tuned and default settings can be overridden.
-	 * @param builder the {@link RestClient.Builder} instance to configure
+	 * Configure the specified {@link Builder RestClient.Builder}. The builder can be
+	 * further tuned and default settings can be overridden.
+	 * @param builder the {@link Builder RestClient.Builder} instance to configure
 	 * @return the configured builder
 	 */
 	public RestClient.Builder configure(RestClient.Builder builder) {
+		ClientHttpRequestFactoryBuilder<?> requestFactoryBuilder = (this.requestFactoryBuilder != null)
+				? this.requestFactoryBuilder : ClientHttpRequestFactoryBuilder.detect();
+		builder.requestFactory(requestFactoryBuilder.build(this.requestFactorySettings));
 		applyCustomizers(builder);
 		return builder;
 	}

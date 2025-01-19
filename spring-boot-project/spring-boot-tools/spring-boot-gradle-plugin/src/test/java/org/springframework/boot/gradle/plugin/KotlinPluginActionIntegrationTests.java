@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.springframework.boot.gradle.testkit.PluginClasspathGradleBuild;
 import org.springframework.boot.testsupport.gradle.testkit.GradleBuild;
 import org.springframework.boot.testsupport.gradle.testkit.GradleBuildExtension;
 
@@ -42,7 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(GradleBuildExtension.class)
 class KotlinPluginActionIntegrationTests {
 
-	GradleBuild gradleBuild = new GradleBuild();
+	GradleBuild gradleBuild = new PluginClasspathGradleBuild();
 
 	@Test
 	void noKotlinVersionPropertyWithoutKotlinPlugin() {
@@ -82,7 +83,7 @@ class KotlinPluginActionIntegrationTests {
 				configured.add(line.substring("Configuring :".length()));
 			}
 		}
-		assertThat(configured).containsExactlyInAnyOrder("help", "clean");
+		assertThat(configured).containsExactlyInAnyOrder("help", "compileJava", "clean");
 	}
 
 }

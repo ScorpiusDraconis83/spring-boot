@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.springframework.boot.loader.tools.LayoutFactory;
 import org.springframework.boot.loader.tools.Libraries;
 import org.springframework.boot.loader.tools.LoaderImplementation;
 import org.springframework.boot.loader.tools.Repackager;
+import org.springframework.util.StringUtils;
 
 /**
  * Repackage existing JAR and WAR archives so that they can be executed from the command
@@ -220,6 +221,10 @@ public class RepackageMojo extends AbstractPackagerMojo {
 	private void repackage() throws MojoExecutionException {
 		Artifact source = getSourceArtifact(this.classifier);
 		File target = getTargetFile(this.finalName, this.classifier, this.outputDirectory);
+		if (source.getFile() == null) {
+			throw new MojoExecutionException(
+					"Source file is not available, make sure 'package' runs as part of the same lifecycle");
+		}
 		Repackager repackager = getRepackager(source.getFile());
 		Libraries libraries = getLibraries(this.requiresUnpack);
 		try {
@@ -271,7 +276,7 @@ public class RepackageMojo extends AbstractPackagerMojo {
 	private void putIfMissing(Properties properties, String key, String... valueCandidates) {
 		if (!properties.containsKey(key)) {
 			for (String candidate : valueCandidates) {
-				if (candidate != null && !candidate.isEmpty()) {
+				if (StringUtils.hasLength(candidate)) {
 					properties.put(key, candidate);
 					return;
 				}

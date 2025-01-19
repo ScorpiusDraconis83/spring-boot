@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,16 @@ import javax.sql.DataSource;
 import io.rsocket.transport.netty.server.TcpServerTransport;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnThreading;
 import org.springframework.boot.autoconfigure.condition.SearchStrategy;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
@@ -40,10 +41,11 @@ import org.springframework.boot.autoconfigure.jmx.JmxProperties;
 import org.springframework.boot.autoconfigure.rsocket.RSocketMessagingAutoConfiguration;
 import org.springframework.boot.autoconfigure.sql.init.OnDatabaseInitializationCondition;
 import org.springframework.boot.autoconfigure.task.TaskSchedulingAutoConfiguration;
+import org.springframework.boot.autoconfigure.thread.Threading;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.context.properties.source.MutuallyExclusiveConfigurationPropertiesException;
-import org.springframework.boot.task.TaskSchedulerBuilder;
+import org.springframework.boot.task.SimpleAsyncTaskSchedulerBuilder;
 import org.springframework.boot.task.ThreadPoolTaskSchedulerBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -67,6 +69,7 @@ import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.PeriodicTrigger;
@@ -81,6 +84,7 @@ import org.springframework.util.StringUtils;
  * @author Stephane Nicoll
  * @author Vedran Pavic
  * @author Madhura Bhave
+ * @author Yong-Hyun Kim
  * @since 1.1.0
  */
 @AutoConfiguration(after = { DataSourceAutoConfiguration.class, JmxAutoConfiguration.class,
@@ -105,6 +109,9 @@ public class IntegrationAutoConfiguration {
 		map.from(properties.getError().isIgnoreFailures()).to(integrationProperties::setErrorChannelIgnoreFailures);
 		map.from(properties.getEndpoint().isThrowExceptionOnLateReply())
 			.to(integrationProperties::setMessagingTemplateThrowExceptionOnLateReply);
+		map.from(properties.getEndpoint().getDefaultTimeout())
+			.as(Duration::toMillis)
+			.to(integrationProperties::setEndpointsDefaultTimeout);
 		map.from(properties.getEndpoint().getReadOnlyHeaders())
 			.as(StringUtils::toStringArray)
 			.to(integrationProperties::setReadOnlyHeaders);
@@ -164,24 +171,29 @@ public class IntegrationAutoConfiguration {
 	}
 
 	/**
-	 * Expose a standard {@link ThreadPoolTaskScheduler} if the user has not enabled task
-	 * scheduling explicitly.
+	 * Expose a standard {@link org.springframework.scheduling.TaskScheduler
+	 * TaskScheduler} if the user has not enabled task scheduling explicitly. A
+	 * {@link SimpleAsyncTaskScheduler} is exposed if the user enables virtual threads via
+	 * {@code spring.threads.virtual.enabled=true}, otherwise
+	 * {@link ThreadPoolTaskScheduler}.
 	 */
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnBean(TaskSchedulerBuilder.class)
 	@ConditionalOnMissingBean(name = IntegrationContextUtils.TASK_SCHEDULER_BEAN_NAME)
-	@SuppressWarnings("removal")
 	protected static class IntegrationTaskSchedulerConfiguration {
 
 		@Bean(name = IntegrationContextUtils.TASK_SCHEDULER_BEAN_NAME)
-		public ThreadPoolTaskScheduler taskScheduler(TaskSchedulerBuilder taskSchedulerBuilder,
-				ObjectProvider<ThreadPoolTaskSchedulerBuilder> threadPoolTaskSchedulerBuilderProvider) {
-			ThreadPoolTaskSchedulerBuilder threadPoolTaskSchedulerBuilder = threadPoolTaskSchedulerBuilderProvider
-				.getIfUnique();
-			if (threadPoolTaskSchedulerBuilder != null) {
-				return threadPoolTaskSchedulerBuilder.build();
-			}
-			return taskSchedulerBuilder.build();
+		@ConditionalOnBean(ThreadPoolTaskSchedulerBuilder.class)
+		@ConditionalOnThreading(Threading.PLATFORM)
+		public ThreadPoolTaskScheduler taskScheduler(ThreadPoolTaskSchedulerBuilder threadPoolTaskSchedulerBuilder) {
+			return threadPoolTaskSchedulerBuilder.build();
+		}
+
+		@Bean(name = IntegrationContextUtils.TASK_SCHEDULER_BEAN_NAME)
+		@ConditionalOnBean(SimpleAsyncTaskSchedulerBuilder.class)
+		@ConditionalOnThreading(Threading.VIRTUAL)
+		public SimpleAsyncTaskScheduler taskSchedulerVirtualThreads(
+				SimpleAsyncTaskSchedulerBuilder simpleAsyncTaskSchedulerBuilder) {
+			return simpleAsyncTaskSchedulerBuilder.build();
 		}
 
 	}
@@ -193,7 +205,7 @@ public class IntegrationAutoConfiguration {
 	@ConditionalOnClass(EnableIntegrationMBeanExport.class)
 	@ConditionalOnMissingBean(value = IntegrationMBeanExporter.class, search = SearchStrategy.CURRENT)
 	@ConditionalOnBean(MBeanServer.class)
-	@ConditionalOnProperty(prefix = "spring.jmx", name = "enabled", havingValue = "true", matchIfMissing = true)
+	@ConditionalOnBooleanProperty("spring.jmx.enabled")
 	protected static class IntegrationJmxConfiguration {
 
 		@Bean
@@ -248,7 +260,7 @@ public class IntegrationAutoConfiguration {
 	protected static class IntegrationJdbcConfiguration {
 
 		@Bean
-		@ConditionalOnMissingBean(IntegrationDataSourceScriptDatabaseInitializer.class)
+		@ConditionalOnMissingBean
 		public IntegrationDataSourceScriptDatabaseInitializer integrationDataSourceInitializer(DataSource dataSource,
 				IntegrationProperties properties) {
 			return new IntegrationDataSourceScriptDatabaseInitializer(dataSource, properties.getJdbc());
@@ -336,12 +348,13 @@ public class IntegrationAutoConfiguration {
 					super(ConfigurationPhase.REGISTER_BEAN);
 				}
 
-				@ConditionalOnProperty(prefix = "spring.integration.rsocket.client", name = "uri")
+				@ConditionalOnProperty("spring.integration.rsocket.client.uri")
 				static class WebSocketAddressConfigured {
 
 				}
 
-				@ConditionalOnProperty(prefix = "spring.integration.rsocket.client", name = { "host", "port" })
+				@ConditionalOnProperty({ "spring.integration.rsocket.client.host",
+						"spring.integration.rsocket.client.port" })
 				static class TcpAddressConfigured {
 
 				}

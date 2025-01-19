@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.aot.hint.MemberCategory;
@@ -76,6 +77,9 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLStateSQLExceptionTranslator;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -165,6 +169,24 @@ class HibernateJpaAutoConfigurationTests extends AbstractJpaAutoConfigurationTes
 	void hibernateDialectIsNotSetByDefault() {
 		contextRunner().run(assertJpaVendorAdapter(
 				(adapter) -> assertThat(adapter.getJpaPropertyMap()).doesNotContainKeys("hibernate.dialect")));
+	}
+
+	@Test
+	void shouldConfigureHibernateJpaDialectWithSqlExceptionTranslatorIfPresent() {
+		SQLStateSQLExceptionTranslator sqlExceptionTranslator = new SQLStateSQLExceptionTranslator();
+		contextRunner().withBean(SQLStateSQLExceptionTranslator.class, () -> sqlExceptionTranslator)
+			.run(assertJpaVendorAdapter((adapter) -> assertThat(adapter.getJpaDialect())
+				.hasFieldOrPropertyWithValue("jdbcExceptionTranslator", sqlExceptionTranslator)));
+	}
+
+	@Test
+	void shouldNotConfigureHibernateJpaDialectWithSqlExceptionTranslatorIfNotUnique() {
+		SQLStateSQLExceptionTranslator sqlExceptionTranslator1 = new SQLStateSQLExceptionTranslator();
+		SQLStateSQLExceptionTranslator sqlExceptionTranslator2 = new SQLStateSQLExceptionTranslator();
+		contextRunner().withBean("sqlExceptionTranslator1", SQLExceptionTranslator.class, () -> sqlExceptionTranslator1)
+			.withBean("sqlExceptionTranslator2", SQLExceptionTranslator.class, () -> sqlExceptionTranslator2)
+			.run(assertJpaVendorAdapter((adapter) -> assertThat(adapter.getJpaDialect())
+				.hasFieldOrPropertyWithValue("jdbcExceptionTranslator", null)));
 	}
 
 	@Test
@@ -510,6 +532,84 @@ class HibernateJpaAutoConfigurationTests extends AbstractJpaAutoConfigurationTes
 				.onType(noJtaPlatformClass)
 				.withMemberCategories(MemberCategory.INVOKE_DECLARED_CONSTRUCTORS)).accepts(hints);
 		}
+	}
+
+	@Test
+	@Disabled("gh-40177")
+	void whenSpringJpaGenerateDdlIsNotSetThenTableIsNotCreated() {
+		// spring.jpa.generated-ddl defaults to false but this test still fails because
+		// we're using an embedded database which means that HibernateProperties defaults
+		// hibernate.hbm2ddl.auto to create-drop, replacing the
+		// hibernate.hbm2ddl.auto=none that comes from generate-ddl being false.
+		contextRunner().run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	@Test
+	void whenSpringJpaGenerateDdlIsTrueThenTableIsCreated() {
+		contextRunner().withPropertyValues("spring.jpa.generate-ddl=true")
+			.run((context) -> assertThat(tablesFrom(context)).contains("CITY"));
+	}
+
+	@Test
+	@Disabled("gh-40177")
+	void whenSpringJpaGenerateDdlIsFalseThenTableIsNotCreated() {
+		// This test fails because we're using an embedded database which means that
+		// HibernateProperties defaults hibernate.hbm2ddl.auto to create-drop, replacing
+		// the hibernate.hbm2ddl.auto=none that comes from setting generate-ddl to false.
+		contextRunner().withPropertyValues("spring.jpa.generate-ddl=false")
+			.run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	@Test
+	void whenHbm2DdlAutoIsNoneThenTableIsNotCreated() {
+		contextRunner().withPropertyValues("spring.jpa.properties.hibernate.hbm2ddl.auto=none")
+			.run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	@Test
+	void whenSpringJpaHibernateDdlAutoIsNoneThenTableIsNotCreated() {
+		contextRunner().withPropertyValues("spring.jpa.hibernate.ddl-auto=none")
+			.run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	@Test
+	@Disabled("gh-40177")
+	void whenSpringJpaGenerateDdlIsTrueAndSpringJpaHibernateDdlAutoIsNoneThenTableIsNotCreated() {
+		// This test fails because when ddl-auto is set to none, we remove
+		// hibernate.hbm2ddl.auto from Hibernate properties. This then allows
+		// spring.jpa.generate-ddl to set it to create-drop
+		contextRunner().withPropertyValues("spring.jpa.generate-ddl=true", "spring.jpa.hibernate.ddl-auto=none")
+			.run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	@Test
+	void whenSpringJpaGenerateDdlIsTrueAndSpringJpaHibernateDdlAutoIsDropThenTableIsNotCreated() {
+		contextRunner().withPropertyValues("spring.jpa.generate-ddl=true", "spring.jpa.hibernate.ddl-auto=drop")
+			.run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	@Test
+	void whenSpringJpaGenerateDdlIsTrueAndJakartaSchemaGenerationIsNoneThenTableIsNotCreated() {
+		contextRunner()
+			.withPropertyValues("spring.jpa.generate-ddl=true",
+					"spring.jpa.properties.jakarta.persistence.schema-generation.database.action=none")
+			.run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	@Test
+	void whenSpringJpaGenerateDdlIsTrueSpringJpaHibernateDdlAutoIsCreateAndJakartaSchemaGenerationIsNoneThenTableIsNotCreated() {
+		contextRunner()
+			.withPropertyValues("spring.jpa.generate-ddl=true", "spring.jpa.hibernate.ddl-auto=create",
+					"spring.jpa.properties.jakarta.persistence.schema-generation.database.action=none")
+			.run((context) -> assertThat(tablesFrom(context)).doesNotContain("CITY"));
+	}
+
+	private List<String> tablesFrom(AssertableApplicationContext context) {
+		DataSource dataSource = context.getBean(DataSource.class);
+		JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+		List<String> tables = jdbc.query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES",
+				(results, row) -> results.getString(1));
+		return tables;
 	}
 
 	@Configuration(proxyBeanMethods = false)

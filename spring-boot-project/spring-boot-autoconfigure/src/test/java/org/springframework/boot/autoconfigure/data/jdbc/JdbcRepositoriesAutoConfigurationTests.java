@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.springframework.data.jdbc.core.JdbcAggregateTemplate;
 import org.springframework.data.jdbc.core.convert.DataAccessStrategy;
 import org.springframework.data.jdbc.core.convert.JdbcConverter;
 import org.springframework.data.jdbc.core.convert.JdbcCustomConversions;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.data.jdbc.core.mapping.JdbcMappingContext;
 import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration;
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories;
@@ -58,6 +59,7 @@ import static org.mockito.Mockito.mock;
  * @author Andy Wilkinson
  * @author Stephane Nicoll
  * @author Mark Paluch
+ * @author Jens Schauder
  */
 class JdbcRepositoriesAutoConfigurationTests {
 
@@ -179,6 +181,16 @@ class JdbcRepositoriesAutoConfigurationTests {
 	@Test
 	void allowsUserToDefineCustomDialect() {
 		allowsUserToDefineCustomBean(DialectConfiguration.class, Dialect.class, "customDialect");
+	}
+
+	@Test
+	void allowsConfigurationOfDialectByProperty() {
+		this.contextRunner.with(database())
+			.withPropertyValues("spring.data.jdbc.dialect=postgresql")
+			.withConfiguration(AutoConfigurations.of(JdbcTemplateAutoConfiguration.class,
+					DataSourceTransactionManagerAutoConfiguration.class))
+			.withUserConfiguration(TestConfiguration.class)
+			.run((context) -> assertThat(context).hasSingleBean(JdbcPostgresDialect.class));
 	}
 
 	private void allowsUserToDefineCustomBean(Class<?> configuration, Class<?> beanType, String beanName) {

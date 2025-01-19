@@ -44,6 +44,7 @@ import org.springframework.jms.config.JmsListenerConfigUtils;
 import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerEndpoint;
 import org.springframework.jms.config.SimpleJmsListenerContainerFactory;
+import org.springframework.jms.config.SimpleJmsListenerEndpoint;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.core.JmsTemplate;
@@ -72,20 +73,18 @@ class JmsAutoConfigurationTests {
 
 	@Test
 	void testDefaultJmsConfiguration() {
-		this.contextRunner.withUserConfiguration(TestConfiguration.class).run(this::testDefaultJmsConfiguration);
-	}
-
-	private void testDefaultJmsConfiguration(AssertableApplicationContext loaded) {
-		assertThat(loaded).hasSingleBean(ConnectionFactory.class);
-		assertThat(loaded).hasSingleBean(CachingConnectionFactory.class);
-		CachingConnectionFactory factory = loaded.getBean(CachingConnectionFactory.class);
-		assertThat(factory.getTargetConnectionFactory()).isInstanceOf(ActiveMQConnectionFactory.class);
-		JmsTemplate jmsTemplate = loaded.getBean(JmsTemplate.class);
-		JmsMessagingTemplate messagingTemplate = loaded.getBean(JmsMessagingTemplate.class);
-		assertThat(factory).isEqualTo(jmsTemplate.getConnectionFactory());
-		assertThat(messagingTemplate.getJmsTemplate()).isEqualTo(jmsTemplate);
-		assertThat(getBrokerUrl(factory)).startsWith("vm://");
-		assertThat(loaded.containsBean("jmsListenerContainerFactory")).isTrue();
+		this.contextRunner.withUserConfiguration(TestConfiguration.class).run((context) -> {
+			assertThat(context).hasSingleBean(ConnectionFactory.class);
+			assertThat(context).hasSingleBean(CachingConnectionFactory.class);
+			CachingConnectionFactory factory = context.getBean(CachingConnectionFactory.class);
+			assertThat(factory.getTargetConnectionFactory()).isInstanceOf(ActiveMQConnectionFactory.class);
+			JmsTemplate jmsTemplate = context.getBean(JmsTemplate.class);
+			JmsMessagingTemplate messagingTemplate = context.getBean(JmsMessagingTemplate.class);
+			assertThat(factory).isEqualTo(jmsTemplate.getConnectionFactory());
+			assertThat(messagingTemplate.getJmsTemplate()).isEqualTo(jmsTemplate);
+			assertThat(getBrokerUrl(factory)).startsWith("vm://");
+			assertThat(context.containsBean("jmsListenerContainerFactory")).isTrue();
+		});
 	}
 
 	@Test
@@ -125,6 +124,30 @@ class JmsAutoConfigurationTests {
 	}
 
 	@Test
+	void testDefaultJmsListenerConfiguration() {
+		this.contextRunner.withUserConfiguration(TestConfiguration.class).run((loaded) -> {
+			assertThat(loaded).hasSingleBean(CachingConnectionFactory.class);
+			CachingConnectionFactory connectionFactory = loaded.getBean(CachingConnectionFactory.class);
+			assertThat(loaded).hasSingleBean(DefaultJmsListenerContainerFactory.class);
+			DefaultJmsListenerContainerFactory containerFactory = loaded
+				.getBean(DefaultJmsListenerContainerFactory.class);
+			SimpleJmsListenerEndpoint jmsListenerEndpoint = new SimpleJmsListenerEndpoint();
+			jmsListenerEndpoint.setMessageListener((message) -> {
+			});
+			DefaultMessageListenerContainer container = containerFactory.createListenerContainer(jmsListenerEndpoint);
+			assertThat(container.getClientId()).isNull();
+			assertThat(container.getConcurrentConsumers()).isEqualTo(1);
+			assertThat(container.getConnectionFactory()).isSameAs(connectionFactory.getTargetConnectionFactory());
+			assertThat(container.getMaxConcurrentConsumers()).isEqualTo(1);
+			assertThat(container.getSessionAcknowledgeMode()).isEqualTo(Session.AUTO_ACKNOWLEDGE);
+			assertThat(container.isAutoStartup()).isTrue();
+			assertThat(container.isPubSubDomain()).isFalse();
+			assertThat(container.isSubscriptionDurable()).isFalse();
+			assertThat(container).hasFieldOrPropertyWithValue("receiveTimeout", 1000L);
+		});
+	}
+
+	@Test
 	void testEnableJmsCreateDefaultContainerFactory() {
 		this.contextRunner.withUserConfiguration(EnableJmsConfiguration.class)
 			.run((context) -> assertThat(context)
@@ -153,7 +176,8 @@ class JmsAutoConfigurationTests {
 					"spring.jms.listener.session.acknowledgeMode=client",
 					"spring.jms.listener.session.transacted=false", "spring.jms.listener.minConcurrency=2",
 					"spring.jms.listener.receiveTimeout=2s", "spring.jms.listener.maxConcurrency=10",
-					"spring.jms.subscription-durable=true", "spring.jms.client-id=exampleId")
+					"spring.jms.subscription-durable=true", "spring.jms.client-id=exampleId",
+					"spring.jms.listener.max-messages-per-task=5")
 			.run(this::testJmsListenerContainerFactoryWithCustomSettings);
 	}
 
@@ -165,6 +189,7 @@ class JmsAutoConfigurationTests {
 		assertThat(container.getConcurrentConsumers()).isEqualTo(2);
 		assertThat(container.getMaxConcurrentConsumers()).isEqualTo(10);
 		assertThat(container).hasFieldOrPropertyWithValue("receiveTimeout", 2000L);
+		assertThat(container).hasFieldOrPropertyWithValue("maxMessagesPerTask", 5);
 		assertThat(container.isSubscriptionDurable()).isTrue();
 		assertThat(container.getClientId()).isEqualTo("exampleId");
 	}

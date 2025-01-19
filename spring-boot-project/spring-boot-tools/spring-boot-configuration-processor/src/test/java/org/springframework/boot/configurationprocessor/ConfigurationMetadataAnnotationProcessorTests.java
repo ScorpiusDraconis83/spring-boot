@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,18 @@
 
 package org.springframework.boot.configurationprocessor;
 
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.configurationprocessor.metadata.ConfigurationMetadata;
 import org.springframework.boot.configurationprocessor.metadata.ItemMetadata;
 import org.springframework.boot.configurationprocessor.metadata.Metadata;
+import org.springframework.boot.configurationsample.deprecation.Dbcp2Configuration;
+import org.springframework.boot.configurationsample.method.NestedPropertiesMethod;
+import org.springframework.boot.configurationsample.record.ExampleRecord;
+import org.springframework.boot.configurationsample.record.NestedPropertiesRecord;
 import org.springframework.boot.configurationsample.record.RecordWithGetter;
 import org.springframework.boot.configurationsample.recursive.RecursiveProperties;
 import org.springframework.boot.configurationsample.simple.ClassWithNestedProperties;
@@ -42,9 +49,11 @@ import org.springframework.boot.configurationsample.specific.AnnotatedGetter;
 import org.springframework.boot.configurationsample.specific.BoxingPojo;
 import org.springframework.boot.configurationsample.specific.BuilderPojo;
 import org.springframework.boot.configurationsample.specific.DeprecatedLessPreciseTypePojo;
+import org.springframework.boot.configurationsample.specific.DeprecatedSimplePojo;
 import org.springframework.boot.configurationsample.specific.DeprecatedUnrelatedMethodPojo;
 import org.springframework.boot.configurationsample.specific.DoubleRegistrationProperties;
 import org.springframework.boot.configurationsample.specific.EmptyDefaultValueProperties;
+import org.springframework.boot.configurationsample.specific.EnumValuesPojo;
 import org.springframework.boot.configurationsample.specific.ExcludedTypesPojo;
 import org.springframework.boot.configurationsample.specific.InnerClassAnnotatedGetterConfig;
 import org.springframework.boot.configurationsample.specific.InnerClassHierarchicalProperties;
@@ -166,6 +175,15 @@ class ConfigurationMetadataAnnotationProcessorTests extends AbstractMetadataGene
 		assertThat(metadata).has(Metadata.withProperty("hierarchical.third", String.class)
 			.withDefaultValue("three")
 			.fromSource(HierarchicalProperties.class));
+	}
+
+	@Test
+	void enumValues() {
+		ConfigurationMetadata metadata = compile(EnumValuesPojo.class);
+		assertThat(metadata).has(Metadata.withGroup("test").fromSource(EnumValuesPojo.class));
+		assertThat(metadata).has(Metadata.withProperty("test.seconds", ChronoUnit.class).withDefaultValue("seconds"));
+		assertThat(metadata)
+			.has(Metadata.withProperty("test.hour-of-day", ChronoField.class).withDefaultValue("hour-of-day"));
 	}
 
 	@Test
@@ -333,6 +351,10 @@ class ConfigurationMetadataAnnotationProcessorTests extends AbstractMetadataGene
 		assertThat(metadata).has(Metadata.withProperty("config.third.value"));
 		assertThat(metadata).has(Metadata.withProperty("config.fourth"));
 		assertThat(metadata).isNotEqualTo(Metadata.withGroup("config.fourth"));
+		assertThat(metadata).has(Metadata.withGroup("config.fifth")
+			.ofType(DeprecatedSimplePojo.class)
+			.fromSource(InnerClassProperties.class));
+		assertThat(metadata).has(Metadata.withProperty("config.fifth.value").withDeprecation());
 	}
 
 	@Test
@@ -353,6 +375,15 @@ class ConfigurationMetadataAnnotationProcessorTests extends AbstractMetadataGene
 		assertThat(metadata).has(Metadata.withProperty("specific.value"));
 		assertThat(metadata).has(Metadata.withProperty("foo.name"));
 		assertThat(metadata).isNotEqualTo(Metadata.withProperty("specific.foo"));
+	}
+
+	@Test
+	void nestedClassMethod() {
+		ConfigurationMetadata metadata = compile(NestedPropertiesMethod.class);
+		assertThat(metadata).has(Metadata.withGroup("method-nested.nested"));
+		assertThat(metadata).has(Metadata.withProperty("method-nested.nested.my-nested-property"));
+		assertThat(metadata).has(Metadata.withGroup("method-nested.inner.nested"));
+		assertThat(metadata).has(Metadata.withProperty("method-nested.inner.nested.my-nested-property"));
 	}
 
 	@Test
@@ -506,6 +537,37 @@ class ConfigurationMetadataAnnotationProcessorTests extends AbstractMetadataGene
 		ConfigurationMetadata metadata = compile(RecordWithGetter.class);
 		assertThat(metadata).has(Metadata.withProperty("record-with-getter.alpha"));
 		assertThat(metadata).doesNotHave(Metadata.withProperty("record-with-getter.bravo"));
+	}
+
+	@Test
+	void recordNested() {
+		ConfigurationMetadata metadata = compile(NestedPropertiesRecord.class);
+		assertThat(metadata).has(Metadata.withGroup("record-nested.nested"));
+		assertThat(metadata).has(Metadata.withProperty("record-nested.nested.my-nested-property"));
+		assertThat(metadata).has(Metadata.withGroup("record-nested.inner.nested"));
+		assertThat(metadata).has(Metadata.withProperty("record-nested.inner.nested.my-nested-property"));
+	}
+
+	@Test
+	void shouldNotMarkDbcp2UsernameOrPasswordAsDeprecated() {
+		ConfigurationMetadata metadata = compile(Dbcp2Configuration.class);
+		assertThat(metadata).has(Metadata.withProperty("spring.datasource.dbcp2.username").withNoDeprecation());
+		assertThat(metadata).has(Metadata.withProperty("spring.datasource.dbcp2.password").withNoDeprecation());
+	}
+
+	@Test
+	void recordPropertiesWithDescriptions() {
+		ConfigurationMetadata metadata = compile(ExampleRecord.class);
+		assertThat(metadata).has(Metadata.withProperty("record.descriptions.some-string", String.class)
+			.withDescription("very long description that doesn't fit single line and is indented"));
+		assertThat(metadata).has(Metadata.withProperty("record.descriptions.some-integer", Integer.class)
+			.withDescription("description with @param and @ pitfalls"));
+		assertThat(metadata).has(Metadata.withProperty("record.descriptions.some-boolean", Boolean.class)
+			.withDescription("description with extra spaces"));
+		assertThat(metadata).has(Metadata.withProperty("record.descriptions.some-long", Long.class)
+			.withDescription("description without space after asterisk"));
+		assertThat(metadata).has(Metadata.withProperty("record.descriptions.some-byte", Byte.class)
+			.withDescription("last description in Javadoc"));
 	}
 
 }

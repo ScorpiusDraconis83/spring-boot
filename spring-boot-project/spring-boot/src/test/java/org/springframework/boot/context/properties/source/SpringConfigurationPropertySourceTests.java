@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.boot.context.properties.source;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class SpringConfigurationPropertySourceTests {
 	void createWhenPropertySourceIsNullShouldThrowException() {
 		assertThatIllegalArgumentException()
 			.isThrownBy(() -> new SpringConfigurationPropertySource(null, mock(PropertyMapper.class)))
-			.withMessageContaining("PropertySource must not be null");
+			.withMessageContaining("'propertySource' must not be null");
 	}
 
 	@Test
@@ -100,7 +101,7 @@ class SpringConfigurationPropertySourceTests {
 	@Test
 	void fromWhenPropertySourceIsNullShouldThrowException() {
 		assertThatIllegalArgumentException().isThrownBy(() -> SpringConfigurationPropertySource.from(null))
-			.withMessageContaining("Source must not be null");
+			.withMessageContaining("'source' must not be null");
 	}
 
 	@Test
@@ -239,7 +240,7 @@ class SpringConfigurationPropertySourceTests {
 
 		@Override
 		public Object getProperty(String name) {
-			name = name.toLowerCase();
+			name = name.toLowerCase(Locale.ROOT);
 			if (!name.startsWith(this.prefix)) {
 				return null;
 			}

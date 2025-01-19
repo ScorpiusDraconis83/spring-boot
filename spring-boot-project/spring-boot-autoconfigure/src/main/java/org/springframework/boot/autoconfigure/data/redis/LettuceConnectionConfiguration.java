@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.springframework.boot.autoconfigure.data.redis;
 import java.time.Duration;
 
 import io.lettuce.core.ClientOptions;
+import io.lettuce.core.ReadFrom;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.SocketOptions;
 import io.lettuce.core.TimeoutOptions;
@@ -88,18 +89,22 @@ class LettuceConnectionConfiguration extends RedisConnectionConfiguration {
 	@ConditionalOnMissingBean(RedisConnectionFactory.class)
 	@ConditionalOnThreading(Threading.PLATFORM)
 	LettuceConnectionFactory redisConnectionFactory(
-			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> builderCustomizers,
+			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> clientConfigurationBuilderCustomizers,
+			ObjectProvider<LettuceClientOptionsBuilderCustomizer> clientOptionsBuilderCustomizers,
 			ClientResources clientResources) {
-		return createConnectionFactory(builderCustomizers, clientResources);
+		return createConnectionFactory(clientConfigurationBuilderCustomizers, clientOptionsBuilderCustomizers,
+				clientResources);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(RedisConnectionFactory.class)
 	@ConditionalOnThreading(Threading.VIRTUAL)
 	LettuceConnectionFactory redisConnectionFactoryVirtualThreads(
-			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> builderCustomizers,
+			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> clientConfigurationBuilderCustomizers,
+			ObjectProvider<LettuceClientOptionsBuilderCustomizer> clientOptionsBuilderCustomizers,
 			ClientResources clientResources) {
-		LettuceConnectionFactory factory = createConnectionFactory(builderCustomizers, clientResources);
+		LettuceConnectionFactory factory = createConnectionFactory(clientConfigurationBuilderCustomizers,
+				clientOptionsBuilderCustomizers, clientResources);
 		SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("redis-");
 		executor.setVirtualThreads(true);
 		factory.setExecutor(executor);
@@ -107,10 +112,11 @@ class LettuceConnectionConfiguration extends RedisConnectionConfiguration {
 	}
 
 	private LettuceConnectionFactory createConnectionFactory(
-			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> builderCustomizers,
+			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> clientConfigurationBuilderCustomizers,
+			ObjectProvider<LettuceClientOptionsBuilderCustomizer> clientOptionsBuilderCustomizers,
 			ClientResources clientResources) {
-		LettuceClientConfiguration clientConfig = getLettuceClientConfiguration(builderCustomizers, clientResources,
-				getProperties().getLettuce().getPool());
+		LettuceClientConfiguration clientConfig = getLettuceClientConfiguration(clientConfigurationBuilderCustomizers,
+				clientOptionsBuilderCustomizers, clientResources, getProperties().getLettuce().getPool());
 		return createLettuceConnectionFactory(clientConfig);
 	}
 
@@ -125,16 +131,17 @@ class LettuceConnectionConfiguration extends RedisConnectionConfiguration {
 	}
 
 	private LettuceClientConfiguration getLettuceClientConfiguration(
-			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> builderCustomizers,
+			ObjectProvider<LettuceClientConfigurationBuilderCustomizer> clientConfigurationBuilderCustomizers,
+			ObjectProvider<LettuceClientOptionsBuilderCustomizer> clientOptionsBuilderCustomizers,
 			ClientResources clientResources, Pool pool) {
 		LettuceClientConfigurationBuilder builder = createBuilder(pool);
 		applyProperties(builder);
 		if (StringUtils.hasText(getProperties().getUrl())) {
 			customizeConfigurationFromUrl(builder);
 		}
-		builder.clientOptions(createClientOptions());
+		builder.clientOptions(createClientOptions(clientOptionsBuilderCustomizers));
 		builder.clientResources(clientResources);
-		builderCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+		clientConfigurationBuilderCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
 		return builder.build();
 	}
 
@@ -157,13 +164,37 @@ class LettuceConnectionConfiguration extends RedisConnectionConfiguration {
 			if (lettuce.getShutdownTimeout() != null && !lettuce.getShutdownTimeout().isZero()) {
 				builder.shutdownTimeout(getProperties().getLettuce().getShutdownTimeout());
 			}
+			String readFrom = lettuce.getReadFrom();
+			if (readFrom != null) {
+				builder.readFrom(getReadFrom(readFrom));
+			}
 		}
 		if (StringUtils.hasText(getProperties().getClientName())) {
 			builder.clientName(getProperties().getClientName());
 		}
 	}
 
-	private ClientOptions createClientOptions() {
+	private ReadFrom getReadFrom(String readFrom) {
+		int index = readFrom.indexOf(':');
+		if (index == -1) {
+			return ReadFrom.valueOf(getCanonicalReadFromName(readFrom));
+		}
+		String name = getCanonicalReadFromName(readFrom.substring(0, index));
+		String value = readFrom.substring(index + 1);
+		return ReadFrom.valueOf(name + ":" + value);
+	}
+
+	private String getCanonicalReadFromName(String name) {
+		StringBuilder canonicalName = new StringBuilder(name.length());
+		name.chars()
+			.filter(Character::isLetterOrDigit)
+			.map(Character::toLowerCase)
+			.forEach((c) -> canonicalName.append((char) c));
+		return canonicalName.toString();
+	}
+
+	private ClientOptions createClientOptions(
+			ObjectProvider<LettuceClientOptionsBuilderCustomizer> clientConfigurationBuilderCustomizers) {
 		ClientOptions.Builder builder = initializeClientOptionsBuilder();
 		Duration connectTimeout = getProperties().getConnectTimeout();
 		if (connectTimeout != null) {
@@ -183,7 +214,9 @@ class LettuceConnectionConfiguration extends RedisConnectionConfiguration {
 			}
 			builder.sslOptions(sslOptionsBuilder.build());
 		}
-		return builder.timeoutOptions(TimeoutOptions.enabled()).build();
+		builder.timeoutOptions(TimeoutOptions.enabled());
+		clientConfigurationBuilderCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
+		return builder.build();
 	}
 
 	private ClientOptions.Builder initializeClientOptionsBuilder() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
+import org.quartz.utils.Key;
 
 import org.springframework.boot.actuate.endpoint.OperationResponseBody;
 import org.springframework.boot.actuate.endpoint.SanitizableData;
@@ -74,7 +75,7 @@ public class QuartzEndpoint {
 	private final Sanitizer sanitizer;
 
 	public QuartzEndpoint(Scheduler scheduler, Iterable<SanitizingFunction> sanitizingFunctions) {
-		Assert.notNull(scheduler, "Scheduler must not be null");
+		Assert.notNull(scheduler, "'scheduler' must not be null");
 		this.scheduler = scheduler;
 		this.sanitizer = new Sanitizer(sanitizingFunctions);
 	}
@@ -100,7 +101,7 @@ public class QuartzEndpoint {
 		for (String groupName : this.scheduler.getJobGroupNames()) {
 			List<String> jobs = this.scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName))
 				.stream()
-				.map((key) -> key.getName())
+				.map(Key::getName)
 				.toList();
 			result.put(groupName, Collections.singletonMap("jobs", jobs));
 		}
@@ -121,7 +122,7 @@ public class QuartzEndpoint {
 			groupDetails.put("triggers",
 					this.scheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals(groupName))
 						.stream()
-						.map((key) -> key.getName())
+						.map(Key::getName)
 						.toList());
 			result.put(groupName, groupDetails);
 		}

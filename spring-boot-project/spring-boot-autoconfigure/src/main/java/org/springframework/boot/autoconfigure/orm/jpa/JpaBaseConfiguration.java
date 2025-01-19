@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.springframework.boot.autoconfigure.orm.jpa;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,9 +30,9 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.boot.autoconfigure.domain.EntityScanPackages;
@@ -46,6 +47,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.persistenceunit.ManagedClassNameFilter;
 import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypes;
 import org.springframework.orm.jpa.persistenceunit.PersistenceManagedTypesScanner;
 import org.springframework.orm.jpa.persistenceunit.PersistenceUnitManager;
@@ -69,6 +71,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @author Andy Wilkinson
  * @author Kazuki Shimizu
  * @author Eddú Meléndez
+ * @author Yanming Zhou
  * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
@@ -93,8 +96,7 @@ public abstract class JpaBaseConfiguration {
 	public PlatformTransactionManager transactionManager(
 			ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
 		JpaTransactionManager transactionManager = new JpaTransactionManager();
-		transactionManagerCustomizers
-			.ifAvailable((customizers) -> customizers.customize((TransactionManager) transactionManager));
+		transactionManagerCustomizers.ifAvailable((customizers) -> customizers.customize(transactionManager));
 		return transactionManager;
 	}
 
@@ -118,10 +120,18 @@ public abstract class JpaBaseConfiguration {
 	public EntityManagerFactoryBuilder entityManagerFactoryBuilder(JpaVendorAdapter jpaVendorAdapter,
 			ObjectProvider<PersistenceUnitManager> persistenceUnitManager,
 			ObjectProvider<EntityManagerFactoryBuilderCustomizer> customizers) {
-		EntityManagerFactoryBuilder builder = new EntityManagerFactoryBuilder(jpaVendorAdapter,
-				this.properties.getProperties(), persistenceUnitManager.getIfAvailable());
+		EntityManagerFactoryBuilder builder = new EntityManagerFactoryBuilder(jpaVendorAdapter, buildJpaProperties(),
+				persistenceUnitManager.getIfAvailable());
 		customizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
 		return builder;
+	}
+
+	private Map<String, ?> buildJpaProperties() {
+		Map<String, Object> properties = new HashMap<>(this.properties.getProperties());
+		Map<String, Object> vendorProperties = getVendorProperties();
+		customizeVendorProperties(vendorProperties);
+		properties.putAll(vendorProperties);
+		return properties;
 	}
 
 	@Bean
@@ -129,11 +139,8 @@ public abstract class JpaBaseConfiguration {
 	@ConditionalOnMissingBean({ LocalContainerEntityManagerFactoryBean.class, EntityManagerFactory.class })
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder factoryBuilder,
 			PersistenceManagedTypes persistenceManagedTypes) {
-		Map<String, Object> vendorProperties = getVendorProperties();
-		customizeVendorProperties(vendorProperties);
 		return factoryBuilder.dataSource(this.dataSource)
 			.managedTypes(persistenceManagedTypes)
-			.properties(vendorProperties)
 			.mappingResources(getMappingResources())
 			.jta(isJta())
 			.build();
@@ -195,9 +202,11 @@ public abstract class JpaBaseConfiguration {
 		@Bean
 		@Primary
 		@ConditionalOnMissingBean
-		static PersistenceManagedTypes persistenceManagedTypes(BeanFactory beanFactory, ResourceLoader resourceLoader) {
+		static PersistenceManagedTypes persistenceManagedTypes(BeanFactory beanFactory, ResourceLoader resourceLoader,
+				ObjectProvider<ManagedClassNameFilter> managedClassNameFilter) {
 			String[] packagesToScan = getPackagesToScan(beanFactory);
-			return new PersistenceManagedTypesScanner(resourceLoader).scan(packagesToScan);
+			return new PersistenceManagedTypesScanner(resourceLoader, managedClassNameFilter.getIfAvailable())
+				.scan(packagesToScan);
 		}
 
 		private static String[] getPackagesToScan(BeanFactory beanFactory) {
@@ -215,7 +224,7 @@ public abstract class JpaBaseConfiguration {
 	@ConditionalOnClass(WebMvcConfigurer.class)
 	@ConditionalOnMissingBean({ OpenEntityManagerInViewInterceptor.class, OpenEntityManagerInViewFilter.class })
 	@ConditionalOnMissingFilterBean(OpenEntityManagerInViewFilter.class)
-	@ConditionalOnProperty(prefix = "spring.jpa", name = "open-in-view", havingValue = "true", matchIfMissing = true)
+	@ConditionalOnBooleanProperty(name = "spring.jpa.open-in-view", matchIfMissing = true)
 	protected static class JpaWebConfiguration {
 
 		private static final Log logger = LogFactory.getLog(JpaWebConfiguration.class);

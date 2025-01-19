@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
 	@Override
 	public String getUsername() {
 		if (this.properties.getUrl() != null) {
-			ConnectionInfo connectionInfo = connectionInfo(this.properties.getUrl());
+			ConnectionInfo connectionInfo = ConnectionInfo.of(this.properties.getUrl());
 			return connectionInfo.getUsername();
 		}
 		return this.properties.getUsername();
@@ -48,7 +48,7 @@ class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
 	@Override
 	public String getPassword() {
 		if (this.properties.getUrl() != null) {
-			ConnectionInfo connectionInfo = connectionInfo(this.properties.getUrl());
+			ConnectionInfo connectionInfo = ConnectionInfo.of(this.properties.getUrl());
 			return connectionInfo.getPassword();
 		}
 		return this.properties.getPassword();
@@ -57,15 +57,11 @@ class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
 	@Override
 	public Standalone getStandalone() {
 		if (this.properties.getUrl() != null) {
-			ConnectionInfo connectionInfo = connectionInfo(this.properties.getUrl());
+			ConnectionInfo connectionInfo = ConnectionInfo.of(this.properties.getUrl());
 			return Standalone.of(connectionInfo.getUri().getHost(), connectionInfo.getUri().getPort(),
 					this.properties.getDatabase());
 		}
 		return Standalone.of(this.properties.getHost(), this.properties.getPort(), this.properties.getDatabase());
-	}
-
-	private ConnectionInfo connectionInfo(String url) {
-		return (url != null) ? RedisConnectionConfiguration.parseUrl(url) : null;
 	}
 
 	@Override
@@ -113,8 +109,10 @@ class PropertiesRedisConnectionDetails implements RedisConnectionDetails {
 	}
 
 	private Node asNode(String node) {
-		String[] components = node.split(":");
-		return new Node(components[0], Integer.parseInt(components[1]));
+		int portSeparatorIndex = node.lastIndexOf(':');
+		String host = node.substring(0, portSeparatorIndex);
+		int port = Integer.parseInt(node.substring(portSeparatorIndex + 1));
+		return new Node(host, port);
 	}
 
 }

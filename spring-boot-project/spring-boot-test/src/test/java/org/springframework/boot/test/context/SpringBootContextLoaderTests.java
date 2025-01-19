@@ -60,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
  * @author Stephane Nicoll
  * @author Scott Frederick
  * @author Madhura Bhave
+ * @author Sijun Yang
  */
 class SpringBootContextLoaderTests {
 
@@ -127,11 +128,6 @@ class SpringBootContextLoaderTests {
 		assertThat(getActiveProfiles(MultipleActiveProfiles.class)).containsExactly("profile1", "profile2");
 	}
 
-	@Test
-	void activeProfileWithComma() {
-		assertThat(getActiveProfiles(ActiveProfileWithComma.class)).containsExactly("profile1,2");
-	}
-
 	@Test // gh-28776
 	void testPropertyValuesShouldTakePrecedenceWhenInlinedPropertiesPresent() {
 		TestContext context = new ExposedTestContextManager(SimpleConfig.class).getExposedTestContext();
@@ -160,11 +156,11 @@ class SpringBootContextLoaderTests {
 			.stream()
 			.map(PropertySource::getName)
 			.collect(Collectors.toCollection(ArrayList::new));
-		String last = names.remove(names.size() - 1);
+		String configResource = names.remove(names.size() - 2);
 		assertThat(names).containsExactly("configurationProperties", "Inlined Test Properties", "commandLineArgs",
 				"servletConfigInitParams", "servletContextInitParams", "systemProperties", "systemEnvironment",
-				"random");
-		assertThat(last).startsWith("Config resource");
+				"random", "applicationInfo");
+		assertThat(configResource).startsWith("Config resource");
 	}
 
 	@Test
@@ -314,14 +310,8 @@ class SpringBootContextLoaderTests {
 
 	}
 
-	@SpringBootTest(classes = Config.class)
-	@ActiveProfiles({ "profile1,2" })
-	static class ActiveProfileWithComma {
-
-	}
-
 	@SpringBootTest(properties = { "key=myValue" }, classes = Config.class)
-	@ActiveProfiles({ "profile1,2" })
+	@ActiveProfiles({ "profile1" })
 	static class ActiveProfileWithInlinedProperties {
 
 	}

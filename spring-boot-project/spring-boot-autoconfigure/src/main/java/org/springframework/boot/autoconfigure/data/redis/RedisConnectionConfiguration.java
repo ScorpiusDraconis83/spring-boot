@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,8 +123,8 @@ abstract class RedisConnectionConfiguration {
 		}
 		RedisProperties.Cluster clusterProperties = this.properties.getCluster();
 		if (this.connectionDetails.getCluster() != null) {
-			RedisClusterConfiguration config = new RedisClusterConfiguration(
-					getNodes(this.connectionDetails.getCluster()));
+			RedisClusterConfiguration config = new RedisClusterConfiguration();
+			config.setClusterNodes(getNodes(this.connectionDetails.getCluster()));
 			if (clusterProperties != null && clusterProperties.getMaxRedirects() != null) {
 				config.setMaxRedirects(clusterProperties.getMaxRedirects());
 			}
@@ -138,8 +138,12 @@ abstract class RedisConnectionConfiguration {
 		return null;
 	}
 
-	private List<String> getNodes(Cluster cluster) {
-		return cluster.getNodes().stream().map((node) -> "%s:%d".formatted(node.host(), node.port())).toList();
+	private List<RedisNode> getNodes(Cluster cluster) {
+		return cluster.getNodes().stream().map(this::asRedisNode).toList();
+	}
+
+	private RedisNode asRedisNode(Node node) {
+		return new RedisNode(node.host(), node.port());
 	}
 
 	protected final RedisProperties getProperties() {
@@ -162,48 +166,20 @@ abstract class RedisConnectionConfiguration {
 	private List<RedisNode> createSentinels(Sentinel sentinel) {
 		List<RedisNode> nodes = new ArrayList<>();
 		for (Node node : sentinel.getNodes()) {
-			nodes.add(new RedisNode(node.host(), node.port()));
+			nodes.add(asRedisNode(node));
 		}
 		return nodes;
 	}
 
 	protected final boolean urlUsesSsl() {
-		return parseUrl(this.properties.getUrl()).isUseSsl();
+		return ConnectionInfo.of(this.properties.getUrl()).isUseSsl();
 	}
 
 	protected final RedisConnectionDetails getConnectionDetails() {
 		return this.connectionDetails;
 	}
 
-	static ConnectionInfo parseUrl(String url) {
-		try {
-			URI uri = new URI(url);
-			String scheme = uri.getScheme();
-			if (!"redis".equals(scheme) && !"rediss".equals(scheme)) {
-				throw new RedisUrlSyntaxException(url);
-			}
-			boolean useSsl = ("rediss".equals(scheme));
-			String username = null;
-			String password = null;
-			if (uri.getUserInfo() != null) {
-				String candidate = uri.getUserInfo();
-				int index = candidate.indexOf(':');
-				if (index >= 0) {
-					username = candidate.substring(0, index);
-					password = candidate.substring(index + 1);
-				}
-				else {
-					password = candidate;
-				}
-			}
-			return new ConnectionInfo(uri, useSsl, username, password);
-		}
-		catch (URISyntaxException ex) {
-			throw new RedisUrlSyntaxException(url, ex);
-		}
-	}
-
-	static class ConnectionInfo {
+	static final class ConnectionInfo {
 
 		private final URI uri;
 
@@ -213,7 +189,7 @@ abstract class RedisConnectionConfiguration {
 
 		private final String password;
 
-		ConnectionInfo(URI uri, boolean useSsl, String username, String password) {
+		private ConnectionInfo(URI uri, boolean useSsl, String username, String password) {
 			this.uri = uri;
 			this.useSsl = useSsl;
 			this.username = username;
@@ -234,6 +210,34 @@ abstract class RedisConnectionConfiguration {
 
 		String getPassword() {
 			return this.password;
+		}
+
+		static ConnectionInfo of(String url) {
+			try {
+				URI uri = new URI(url);
+				String scheme = uri.getScheme();
+				if (!"redis".equals(scheme) && !"rediss".equals(scheme)) {
+					throw new RedisUrlSyntaxException(url);
+				}
+				boolean useSsl = ("rediss".equals(scheme));
+				String username = null;
+				String password = null;
+				if (uri.getUserInfo() != null) {
+					String candidate = uri.getUserInfo();
+					int index = candidate.indexOf(':');
+					if (index >= 0) {
+						username = candidate.substring(0, index);
+						password = candidate.substring(index + 1);
+					}
+					else {
+						password = candidate;
+					}
+				}
+				return new ConnectionInfo(uri, useSsl, username, password);
+			}
+			catch (URISyntaxException ex) {
+				throw new RedisUrlSyntaxException(url, ex);
+			}
 		}
 
 	}

@@ -34,8 +34,8 @@ import org.assertj.core.api.InstanceOfAssertFactory;
 import org.assertj.core.api.MapAssert;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
-import org.mockito.Mockito;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -49,6 +49,7 @@ import org.springframework.pulsar.core.PulsarAdminBuilderCustomizer;
 import org.springframework.pulsar.core.PulsarAdministration;
 import org.springframework.pulsar.core.PulsarClientBuilderCustomizer;
 import org.springframework.pulsar.core.PulsarClientFactory;
+import org.springframework.pulsar.core.PulsarTopicBuilder;
 import org.springframework.pulsar.core.SchemaResolver;
 import org.springframework.pulsar.core.SchemaResolver.SchemaResolverCustomizer;
 import org.springframework.pulsar.core.TopicResolver;
@@ -83,6 +84,15 @@ class PulsarConfigurationTests {
 			.withBean("customPulsarConnectionDetails", PulsarConnectionDetails.class, () -> customConnectionDetails)
 			.run((context) -> assertThat(context).getBean(PulsarConnectionDetails.class)
 				.isSameAs(customConnectionDetails));
+	}
+
+	@Test
+	void whenHasUserDefinedContainerFactoryCustomizersBeanDoesNotAutoConfigureBean() {
+		PulsarContainerFactoryCustomizers customizers = mock(PulsarContainerFactoryCustomizers.class);
+		this.contextRunner
+			.withBean("customContainerFactoryCustomizers", PulsarContainerFactoryCustomizers.class, () -> customizers)
+			.run((context) -> assertThat(context).getBean(PulsarContainerFactoryCustomizers.class)
+				.isSameAs(customizers));
 	}
 
 	@Nested
@@ -128,7 +138,7 @@ class PulsarConfigurationTests {
 			PulsarConfigurationTests.this.contextRunner.withBean(PulsarConnectionDetails.class, () -> connectionDetails)
 				.withPropertyValues("spring.pulsar.client.service-url=properties",
 						"spring.pulsar.client.failover.backup-clusters[0].service-url=backup-cluster-1",
-						"spring.pulsar.client.failover.failover-delay=15s",
+						"spring.pulsar.client.failover.delay=15s",
 						"spring.pulsar.client.failover.switch-back-delay=30s",
 						"spring.pulsar.client.failover.check-interval=5s",
 						"spring.pulsar.client.failover.backup-clusters[1].service-url=backup-cluster-2",
@@ -143,9 +153,8 @@ class PulsarConfigurationTests {
 						.getField(clientFactory, "customizer");
 					customizeAction.accept(pulsarClientBuilderCustomizer, target);
 					InOrder ordered = inOrder(target);
-					ordered.verify(target).serviceUrlProvider(Mockito.any(AutoClusterFailover.class));
-					assertThat(pulsarProperties.getClient().getFailover().getFailOverDelay())
-						.isEqualTo(Duration.ofSeconds(15));
+					ordered.verify(target).serviceUrlProvider(ArgumentMatchers.any(AutoClusterFailover.class));
+					assertThat(pulsarProperties.getClient().getFailover().getDelay()).isEqualTo(Duration.ofSeconds(15));
 					assertThat(pulsarProperties.getClient().getFailover().getSwitchBackDelay())
 						.isEqualTo(Duration.ofSeconds(30));
 					assertThat(pulsarProperties.getClient().getFailover().getCheckInterval())
@@ -317,6 +326,46 @@ class PulsarConfigurationTests {
 					.asInstanceOf(InstanceOfAssertFactories.type(DefaultTopicResolver.class))
 					.extracting(DefaultTopicResolver::getCustomTopicMappings, InstanceOfAssertFactories.MAP)
 					.containsOnly(entry(TestRecord.class, "foo-topic"), entry(String.class, "string-topic")));
+		}
+
+	}
+
+	@Nested
+	class TopicBuilderTests {
+
+		private final ApplicationContextRunner contextRunner = PulsarConfigurationTests.this.contextRunner;
+
+		@Test
+		void whenHasUserDefinedBeanDoesNotAutoConfigureBean() {
+			PulsarTopicBuilder topicBuilder = mock(PulsarTopicBuilder.class);
+			this.contextRunner.withBean("customPulsarTopicBuilder", PulsarTopicBuilder.class, () -> topicBuilder)
+				.run((context) -> assertThat(context).getBean(PulsarTopicBuilder.class).isSameAs(topicBuilder));
+		}
+
+		@Test
+		void whenHasDefaultsTopicDisabledPropertyDoesNotCreateBean() {
+			this.contextRunner.withPropertyValues("spring.pulsar.defaults.topic.enabled=false")
+				.run((context) -> assertThat(context).doesNotHaveBean(PulsarTopicBuilder.class));
+		}
+
+		@Test
+		void whenHasDefaultsTenantAndNamespaceAppliedToTopicBuilder() {
+			List<String> properties = new ArrayList<>();
+			properties.add("spring.pulsar.defaults.topic.tenant=my-tenant");
+			properties.add("spring.pulsar.defaults.topic.namespace=my-namespace");
+			this.contextRunner.withPropertyValues(properties.toArray(String[]::new))
+				.run((context) -> assertThat(context).getBean(PulsarTopicBuilder.class)
+					.asInstanceOf(InstanceOfAssertFactories.type(PulsarTopicBuilder.class))
+					.satisfies((topicBuilder) -> {
+						assertThat(topicBuilder).hasFieldOrPropertyWithValue("defaultTenant", "my-tenant");
+						assertThat(topicBuilder).hasFieldOrPropertyWithValue("defaultNamespace", "my-namespace");
+					}));
+		}
+
+		@Test
+		void beanHasScopePrototype() {
+			this.contextRunner.run((context) -> assertThat(context.getBean(PulsarTopicBuilder.class))
+				.isNotSameAs(context.getBean(PulsarTopicBuilder.class)));
 		}
 
 	}

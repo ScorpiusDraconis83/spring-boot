@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Andy Wilkinson
  * @author Madhura Bhave
  * @author Scott Frederick
+ * @author Moritz Halbritter
  */
 abstract class AbstractBootArchiveIntegrationTests {
 
@@ -321,12 +322,12 @@ abstract class AbstractBootArchiveIntegrationTests {
 	}
 
 	@TestTemplate
-	void notUpToDateWhenBuiltWithLayerToolsAndThenWithoutLayerTools() {
-		assertThat(this.gradleBuild.scriptProperty("layerTools", "")
+	void notUpToDateWhenBuiltWithToolsAndThenWithoutTools() {
+		assertThat(this.gradleBuild.scriptProperty("includeTools", "")
 			.build(this.taskName)
 			.task(":" + this.taskName)
 			.getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
-		assertThat(this.gradleBuild.scriptProperty("layerTools", "includeLayerTools = false")
+		assertThat(this.gradleBuild.scriptProperty("includeTools", "includeTools = false")
 			.build(this.taskName)
 			.task(":" + this.taskName)
 			.getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
@@ -345,7 +346,7 @@ abstract class AbstractBootArchiveIntegrationTests {
 		assertThat(this.gradleBuild.build(this.taskName).task(":" + this.taskName).getOutcome())
 			.isEqualTo(TaskOutcome.SUCCESS);
 		Map<String, List<String>> indexedLayers;
-		String layerToolsJar = this.libPath + JarModeLibrary.LAYER_TOOLS.getName();
+		String layerToolsJar = this.libPath + JarModeLibrary.TOOLS.getName();
 		try (JarFile jarFile = new JarFile(new File(this.gradleBuild.getProjectDir(), "build/libs").listFiles()[0])) {
 			assertThat(jarFile.getEntry(layerToolsJar)).isNotNull();
 			assertThat(jarFile.getEntry(this.libPath + "commons-lang3-3.9.jar")).isNotNull();
@@ -397,7 +398,7 @@ abstract class AbstractBootArchiveIntegrationTests {
 		assertThat(this.gradleBuild.build(this.taskName).task(":" + this.taskName).getOutcome())
 			.isEqualTo(TaskOutcome.SUCCESS);
 		Map<String, List<String>> indexedLayers;
-		String layerToolsJar = this.libPath + JarModeLibrary.LAYER_TOOLS.getName();
+		String layerToolsJar = this.libPath + JarModeLibrary.TOOLS.getName();
 		try (JarFile jarFile = new JarFile(new File(this.gradleBuild.getProjectDir(), "build/libs").listFiles()[0])) {
 			assertThat(jarFile.getEntry(layerToolsJar)).isNotNull();
 			assertThat(jarFile.getEntry(this.libPath + "alpha-1.2.3.jar")).isNotNull();
@@ -443,7 +444,7 @@ abstract class AbstractBootArchiveIntegrationTests {
 		BuildResult build = this.gradleBuild.build(this.taskName);
 		assertThat(build.task(":" + this.taskName).getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
 		Map<String, List<String>> indexedLayers;
-		String layerToolsJar = this.libPath + JarModeLibrary.LAYER_TOOLS.getName();
+		String layerToolsJar = this.libPath + JarModeLibrary.TOOLS.getName();
 		try (JarFile jarFile = new JarFile(new File(this.gradleBuild.getProjectDir(), "build/libs").listFiles()[0])) {
 			assertThat(jarFile.getEntry(layerToolsJar)).isNotNull();
 			assertThat(jarFile.getEntry(this.libPath + "commons-lang3-3.9.jar")).isNotNull();
@@ -490,7 +491,7 @@ abstract class AbstractBootArchiveIntegrationTests {
 		BuildResult build = this.gradleBuild.build(this.taskName);
 		assertThat(build.task(":" + this.taskName).getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
 		Map<String, List<String>> indexedLayers;
-		String layerToolsJar = this.libPath + JarModeLibrary.LAYER_TOOLS.getName();
+		String layerToolsJar = this.libPath + JarModeLibrary.TOOLS.getName();
 		try (JarFile jarFile = new JarFile(new File(this.gradleBuild.getProjectDir(), "build/libs").listFiles()[0])) {
 			assertThat(jarFile.getEntry(layerToolsJar)).isNotNull();
 			assertThat(jarFile.getEntry(this.libPath + "alpha-1.2.3.jar")).isNotNull();
@@ -596,7 +597,11 @@ abstract class AbstractBootArchiveIntegrationTests {
 
 	@TestTemplate
 	void dirModeAndFileModeAreApplied() throws IOException {
-		BuildResult result = this.gradleBuild.build(this.taskName);
+		BuildResult result = this.gradleBuild.expectDeprecationWarningsWithAtLeastVersion("8.8-rc-1")
+			.expectDeprecationMessages("The CopyProcessingSpec.setDirMode(Integer) method has been deprecated",
+					"The CopyProcessingSpec.setFileMode(Integer) method has been deprecated",
+					"upgrading_version_8.html#unix_file_permissions_deprecated")
+			.build(this.taskName);
 		assertThat(result.task(":" + this.taskName).getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
 		try (ZipFile jarFile = new ZipFile(new File(this.gradleBuild.getProjectDir(), "build/libs").listFiles()[0])) {
 			Enumeration<ZipArchiveEntry> entries = jarFile.getEntries();
@@ -621,7 +626,7 @@ abstract class AbstractBootArchiveIntegrationTests {
 
 	protected void copyApplication(String name) throws IOException {
 		File output = new File(this.gradleBuild.getProjectDir(),
-				"src/main/java/com/example/" + this.taskName.toLowerCase() + "/" + name);
+				"src/main/java/com/example/" + this.taskName.toLowerCase(Locale.ROOT) + "/" + name);
 		output.mkdirs();
 		FileSystemUtils.copyRecursively(
 				new File("src/test/java/com/example/" + this.taskName.toLowerCase(Locale.ENGLISH) + "/" + name),
