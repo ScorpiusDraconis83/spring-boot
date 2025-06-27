@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class ContextPairsTests {
 		ContextPairs contextPairs = new ContextPairs(false, null);
 		Map<String, String> map = Map.of("spring", "boot");
 		Map<String, Object> actual = apply(contextPairs.flat(".", (pairs) -> pairs.addMapEntries((item) -> map)));
-		assertThat(actual.isEmpty());
+		assertThat(actual).isEmpty();
 	}
 
 	@Test
@@ -96,7 +96,7 @@ class ContextPairsTests {
 		ContextPairs contextPairs = new ContextPairs(false, null);
 		Map<String, String> map = Map.of("spring", "boot");
 		Map<String, Object> actual = apply(contextPairs.nested((pairs) -> pairs.addMapEntries((item) -> map)));
-		assertThat(actual.isEmpty());
+		assertThat(actual).isEmpty();
 	}
 
 	@Test

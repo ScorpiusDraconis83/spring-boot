@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.junit.platform.commons.util.Preconditions;
 
 /**
@@ -32,7 +33,8 @@ import org.junit.platform.commons.util.Preconditions;
 class BooleanArgumentsProvider implements ArgumentsProvider {
 
 	@Override
-	public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
+	public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameterDeclarations,
+			ExtensionContext context) {
 		Method testMethod = context.getRequiredTestMethod();
 		Preconditions.condition(testMethod.getParameterCount() > 0, () -> String.format(
 				"@BooleanValueSource cannot provide arguments to method [%s]: the method does not declare any formal parameters.",

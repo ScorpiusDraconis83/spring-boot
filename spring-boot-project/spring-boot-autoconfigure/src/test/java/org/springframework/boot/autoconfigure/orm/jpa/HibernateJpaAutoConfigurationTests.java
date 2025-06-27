@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -240,8 +240,9 @@ class HibernateJpaAutoConfigurationTests extends AbstractJpaAutoConfigurationTes
 	void shouldConfigureHibernateJpaDialectWithSqlExceptionTranslatorIfPresent() {
 		SQLStateSQLExceptionTranslator sqlExceptionTranslator = new SQLStateSQLExceptionTranslator();
 		contextRunner().withBean(SQLStateSQLExceptionTranslator.class, () -> sqlExceptionTranslator)
-			.run(assertJpaVendorAdapter((adapter) -> assertThat(adapter.getJpaDialect())
-				.hasFieldOrPropertyWithValue("jdbcExceptionTranslator", sqlExceptionTranslator)));
+			.run(assertJpaVendorAdapter(
+					(adapter) -> assertThat(adapter.getJpaDialect()).extracting("exceptionTranslator")
+						.hasFieldOrPropertyWithValue("jdbcExceptionTranslator", sqlExceptionTranslator)));
 	}
 
 	@Test
@@ -250,8 +251,9 @@ class HibernateJpaAutoConfigurationTests extends AbstractJpaAutoConfigurationTes
 		SQLStateSQLExceptionTranslator sqlExceptionTranslator2 = new SQLStateSQLExceptionTranslator();
 		contextRunner().withBean("sqlExceptionTranslator1", SQLExceptionTranslator.class, () -> sqlExceptionTranslator1)
 			.withBean("sqlExceptionTranslator2", SQLExceptionTranslator.class, () -> sqlExceptionTranslator2)
-			.run(assertJpaVendorAdapter((adapter) -> assertThat(adapter.getJpaDialect())
-				.hasFieldOrPropertyWithValue("jdbcExceptionTranslator", null)));
+			.run(assertJpaVendorAdapter(
+					(adapter) -> assertThat(adapter.getJpaDialect()).extracting("exceptionTranslator")
+						.hasFieldOrPropertyWithValue("jdbcExceptionTranslator", null)));
 	}
 
 	@Test

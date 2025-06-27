@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.springframework.boot.docs.features.devservices.testcontainers.atdevelopmenttime.devtools
 
-package org.springframework.boot.docs.features.testcontainers.atdevelopmenttime.importingcontainerdeclarations
-
+import org.springframework.boot.devtools.restart.RestartScope
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.testcontainers.context.ImportTestcontainers
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.context.annotation.Bean
+import org.testcontainers.containers.MongoDBContainer
 
 @TestConfiguration(proxyBeanMethods = false)
-@ImportTestcontainers(MyContainers::class)
-class MyContainersConfiguration
+class MyContainersConfiguration {
+
+	@Bean
+	@RestartScope
+	@ServiceConnection
+	fun mongoDbContainer(): MongoDBContainer {
+		return MongoDBContainer("mongo:5.0")
+	}
+
+}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
+import org.springframework.boot.testsupport.junit.EnabledOnLocale;
 import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactory;
 import org.springframework.boot.web.reactive.server.AbstractReactiveWebServerFactoryTests;
 import org.springframework.boot.web.server.PortInUseException;
@@ -225,6 +226,7 @@ class TomcatReactiveWebServerFactoryTests extends AbstractReactiveWebServerFacto
 	}
 
 	@Test
+	@EnabledOnLocale(language = "en")
 	void portClashOfPrimaryConnectorResultsInPortInUseException() throws Exception {
 		doWithBlockedPort((port) -> assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> {
 			AbstractReactiveWebServerFactory factory = getFactory();

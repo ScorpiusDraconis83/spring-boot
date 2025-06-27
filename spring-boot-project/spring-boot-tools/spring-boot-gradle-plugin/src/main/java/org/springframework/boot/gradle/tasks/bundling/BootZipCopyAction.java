@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -256,7 +259,7 @@ class BootZipCopyAction implements CopyAction {
 		private void processDirectory(FileCopyDetails details) throws IOException {
 			String name = details.getRelativePath().getPathString();
 			ZipArchiveEntry entry = new ZipArchiveEntry(name + '/');
-			prepareEntry(entry, name, getTime(details), getFileMode(details));
+			prepareEntry(entry, name, getTime(details), getDirMode(details));
 			this.out.putArchiveEntry(entry);
 			this.out.closeArchiveEntry();
 			this.writtenDirectories.add(name);
@@ -350,7 +353,7 @@ class BootZipCopyAction implements CopyAction {
 			String name = location + library.getName();
 			writeEntry(name, ZipEntryContentWriter.fromInputStream(library.openStream()), false, (entry) -> {
 				try (InputStream in = library.openStream()) {
-					prepareStoredEntry(library.openStream(), entry);
+					prepareStoredEntry(library.openStream(), false, entry);
 				}
 			});
 			if (BootZipCopyAction.this.layerResolver != null) {
@@ -450,14 +453,13 @@ class BootZipCopyAction implements CopyAction {
 		}
 
 		private void prepareStoredEntry(FileCopyDetails details, ZipArchiveEntry archiveEntry) throws IOException {
-			prepareStoredEntry(details.open(), archiveEntry);
-			if (BootZipCopyAction.this.requiresUnpack.isSatisfiedBy(details)) {
-				archiveEntry.setComment("UNPACK:" + FileUtils.sha1Hash(details.getFile()));
-			}
+			prepareStoredEntry(details.open(), BootZipCopyAction.this.requiresUnpack.isSatisfiedBy(details),
+					archiveEntry);
 		}
 
-		private void prepareStoredEntry(InputStream input, ZipArchiveEntry archiveEntry) throws IOException {
-			new CrcAndSize(input).setUpStoredEntry(archiveEntry);
+		private void prepareStoredEntry(InputStream input, boolean unpack, ZipArchiveEntry archiveEntry)
+				throws IOException {
+			new StoredEntryPreparator(input, unpack).prepareStoredEntry(archiveEntry);
 		}
 
 		private Long getTime() {
@@ -476,17 +478,21 @@ class BootZipCopyAction implements CopyAction {
 
 		private int getDirMode() {
 			return (BootZipCopyAction.this.dirMode != null) ? BootZipCopyAction.this.dirMode
-					: UnixStat.DIR_FLAG | UnixStat.DEFAULT_DIR_PERM;
+					: UnixStat.DEFAULT_DIR_PERM;
 		}
 
 		private int getFileMode() {
 			return (BootZipCopyAction.this.fileMode != null) ? BootZipCopyAction.this.fileMode
-					: UnixStat.FILE_FLAG | UnixStat.DEFAULT_FILE_PERM;
+					: UnixStat.DEFAULT_FILE_PERM;
+		}
+
+		private int getDirMode(FileCopyDetails details) {
+			return (BootZipCopyAction.this.fileMode != null) ? BootZipCopyAction.this.dirMode : getPermissions(details);
 		}
 
 		private int getFileMode(FileCopyDetails details) {
 			return (BootZipCopyAction.this.fileMode != null) ? BootZipCopyAction.this.fileMode
-					: UnixStat.FILE_FLAG | getPermissions(details);
+					: getPermissions(details);
 		}
 
 		private int getPermissions(FileCopyDetails details) {
@@ -565,19 +571,32 @@ class BootZipCopyAction implements CopyAction {
 	}
 
 	/**
-	 * Data holder for CRC and Size.
+	 * Prepares a {@link ZipEntry#STORED stored} {@link ZipArchiveEntry entry} with CRC
+	 * and size information. Also adds an {@code UNPACK} comment, if needed.
 	 */
-	private static class CrcAndSize {
+	private static class StoredEntryPreparator {
 
 		private static final int BUFFER_SIZE = 32 * 1024;
+
+		private final MessageDigest messageDigest;
 
 		private final CRC32 crc = new CRC32();
 
 		private long size;
 
-		CrcAndSize(InputStream inputStream) throws IOException {
+		StoredEntryPreparator(InputStream inputStream, boolean unpack) throws IOException {
+			this.messageDigest = (unpack) ? sha1Digest() : null;
 			try (inputStream) {
 				load(inputStream);
+			}
+		}
+
+		private static MessageDigest sha1Digest() {
+			try {
+				return MessageDigest.getInstance("SHA-1");
+			}
+			catch (NoSuchAlgorithmException ex) {
+				throw new IllegalStateException(ex);
 			}
 		}
 
@@ -586,15 +605,21 @@ class BootZipCopyAction implements CopyAction {
 			int bytesRead;
 			while ((bytesRead = inputStream.read(buffer)) != -1) {
 				this.crc.update(buffer, 0, bytesRead);
+				if (this.messageDigest != null) {
+					this.messageDigest.update(buffer, 0, bytesRead);
+				}
 				this.size += bytesRead;
 			}
 		}
 
-		void setUpStoredEntry(ZipArchiveEntry entry) {
+		void prepareStoredEntry(ZipArchiveEntry entry) {
 			entry.setSize(this.size);
 			entry.setCompressedSize(this.size);
 			entry.setCrc(this.crc.getValue());
 			entry.setMethod(ZipEntry.STORED);
+			if (this.messageDigest != null) {
+				entry.setComment("UNPACK:" + HexFormat.of().formatHex(this.messageDigest.digest()));
+			}
 		}
 
 	}

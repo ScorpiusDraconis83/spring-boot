@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package org.springframework.boot.docs.features.testcontainers.atdevelopmenttime.test
+package org.springframework.boot.docs.features.devservices.testcontainers.atdevelopmenttime.test
 
-import org.springframework.boot.fromApplication
-import org.springframework.boot.with
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.docs.features.springapplication.MyApplication
+import org.springframework.boot.runApplication
+
+@SpringBootApplication
+class MyApplication
 
 fun main(args: Array<String>) {
-	fromApplication<MyApplication>().with(MyContainersConfiguration::class).run(*args)
+	runApplication<MyApplication>(*args)
 }
 

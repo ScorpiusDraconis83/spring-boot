@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -598,13 +598,6 @@ public abstract class Packager {
 			public boolean requiresUnpack(String name) {
 				Library library = PackagedLibraries.this.libraries.get(name);
 				return library != null && library.isUnpackRequired();
-			}
-
-			@Override
-			public String sha1Hash(String name) throws IOException {
-				Library library = PackagedLibraries.this.libraries.get(name);
-				Assert.notNull(library, () -> "No library found for entry name '" + name + "'");
-				return Digest.sha1(library::openStream);
 			}
 
 		}

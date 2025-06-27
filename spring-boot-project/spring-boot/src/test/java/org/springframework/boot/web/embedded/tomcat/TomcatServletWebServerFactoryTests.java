@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,7 @@ import org.mockito.InOrder;
 
 import org.springframework.boot.ssl.DefaultSslBundleRegistry;
 import org.springframework.boot.testsupport.classpath.resources.WithPackageResources;
+import org.springframework.boot.testsupport.junit.EnabledOnLocale;
 import org.springframework.boot.testsupport.system.CapturedOutput;
 import org.springframework.boot.web.server.PortInUseException;
 import org.springframework.boot.web.server.Shutdown;
@@ -367,6 +368,7 @@ class TomcatServletWebServerFactoryTests extends AbstractServletWebServerFactory
 	}
 
 	@Test
+	@EnabledOnLocale(language = "en")
 	void startupFailureDoesNotResultInUnstoppedThreadsBeingReported(CapturedOutput output) throws Exception {
 		super.portClashOfPrimaryConnectorResultsInPortInUseException();
 		assertThat(output).doesNotContain("appears to have started a thread named [main]");

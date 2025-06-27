@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -37,7 +38,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 public final class JwtConverterCustomizationsArgumentsProvider implements ArgumentsProvider {
 
 	@Override
-	public Stream<? extends Arguments> provideArguments(ExtensionContext extensionContext) {
+	public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameterDeclarations,
+			ExtensionContext extensionContext) {
 		String customPrefix = "CUSTOM_AUTHORITY_PREFIX_";
 		String customDelimiter = "[~,#:]";
 		String customAuthoritiesClaim = "custom_authorities";

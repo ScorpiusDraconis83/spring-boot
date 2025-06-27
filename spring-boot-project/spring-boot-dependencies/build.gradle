@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 plugins {
 	id "org.springframework.boot.bom"
 	id "org.springframework.boot.deployed"
@@ -338,7 +354,7 @@ bom {
 			releaseNotes("https://github.com/ehcache/ehcache3/releases/tag/v{version}")
 		}
 	}
-	library("Elasticsearch Client", "9.0.2") {
+	library("Elasticsearch Client", "9.0.3") {
 		prohibit {
 			contains "-alpha"
 			contains "-beta"
@@ -369,7 +385,7 @@ bom {
 			javadoc("elasticsearch-rest-client-sniffer", version -> "https://artifacts.elastic.co/javadoc/org/elasticsearch/client/elasticsearch-rest-client-sniffer/%s".formatted(version), "org.elasticsearch.client.sniff")
 		}
 	}
-	library("Flyway", "11.7.2") {
+	library("Flyway", "11.9.2") {
 		group("org.flywaydb") {
 			modules = [
 				"flyway-commandline",
@@ -535,7 +551,7 @@ bom {
 			releaseNotes("https://github.com/hazelcast/hazelcast/releases/tag/v{version}")
 		}
 	}
-	library("Hibernate", "7.0.0.CR1") {
+	library("Hibernate", "7.0.2.Final") {
 		group("org.hibernate.orm") {
 			modules = [
 				"hibernate-agroal",
@@ -567,7 +583,7 @@ bom {
 				.formatted(version.major(), version.minor()))
 		}
 	}
-	library("Hibernate Validator", "9.0.0.CR1") {
+	library("Hibernate Validator", "9.0.1.Final") {
 		group("org.hibernate.validator") {
 			modules = [
 				"hibernate-validator",
@@ -1317,7 +1333,7 @@ bom {
 			releaseNotes("https://github.com/apache/maven-assembly-plugin/releases/tag/maven-assembly-plugin-{version}")
 		}
 	}
-	library("Maven Clean Plugin", "3.4.1") {
+	library("Maven Clean Plugin", "3.5.0") {
 		prohibit {
 			contains "-beta-"
 			because "we don't want betas"

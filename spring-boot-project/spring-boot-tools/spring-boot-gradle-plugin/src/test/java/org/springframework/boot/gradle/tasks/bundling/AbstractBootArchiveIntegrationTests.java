@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,8 @@ import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.TestTemplate;
 
-import org.springframework.boot.loader.tools.FileUtils;
 import org.springframework.boot.loader.tools.JarModeLibrary;
+import org.springframework.boot.testsupport.FileUtils;
 import org.springframework.boot.testsupport.gradle.testkit.GradleBuild;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
@@ -230,6 +230,27 @@ abstract class AbstractBootArchiveIntegrationTests {
 				.filter((name) -> name.startsWith(this.libPath));
 			assertThat(libEntryNames).containsExactly(this.libPath + "commons-io-2.6.jar",
 					this.libPath + "commons-lang3-3.9.jar");
+		}
+	}
+
+	@TestTemplate
+	void versionMismatchBetweenTransitiveDevelopmentOnlyImplementationDependenciesDoesNotRemoveDependencyFromTheArchive()
+			throws IOException {
+		assertThat(this.gradleBuild.build(this.taskName).task(":" + this.taskName).getOutcome())
+			.isEqualTo(TaskOutcome.SUCCESS);
+		try (JarFile jarFile = new JarFile(new File(this.gradleBuild.getProjectDir(), "build/libs").listFiles()[0])) {
+			Stream<String> libEntryNames = jarFile.stream()
+				.filter((entry) -> !entry.isDirectory())
+				.map(JarEntry::getName)
+				.filter((name) -> name.startsWith(this.libPath));
+			if (this.gradleBuild.gradleVersionIsLessThan("9.0.0-rc-1")) {
+				assertThat(libEntryNames).containsExactly(this.libPath + "two-1.0.jar",
+						this.libPath + "commons-io-2.19.0.jar");
+			}
+			else {
+				assertThat(libEntryNames).containsExactly(this.libPath + "commons-io-2.19.0.jar",
+						this.libPath + "two-1.0.jar");
+			}
 		}
 	}
 
@@ -589,10 +610,10 @@ abstract class AbstractBootArchiveIntegrationTests {
 					continue;
 				}
 				if (entry.isDirectory()) {
-					assertEntryMode(entry, UnixStat.DIR_FLAG | UnixStat.DEFAULT_DIR_PERM);
+					assertEntryMode(entry, UnixStat.DEFAULT_DIR_PERM);
 				}
 				else {
-					assertEntryMode(entry, UnixStat.FILE_FLAG | UnixStat.DEFAULT_FILE_PERM);
+					assertEntryMode(entry, UnixStat.DEFAULT_FILE_PERM);
 				}
 			}
 		}
