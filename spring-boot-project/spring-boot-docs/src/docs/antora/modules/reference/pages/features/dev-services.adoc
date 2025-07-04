@@ -89,10 +89,10 @@ The following service connections are currently supported:
 | javadoc:org.springframework.boot.autoconfigure.jms.artemis.ArtemisConnectionDetails[]
 | Containers named "apache/activemq-artemis"
 
-| javadoc:org.springframework.boot.autoconfigure.cassandra.CassandraConnectionDetails[]
+| javadoc:org.springframework.boot.cassandra.autoconfigure.CassandraConnectionDetails[]
 | Containers named "cassandra" or "bitnami/cassandra"
 
-| javadoc:org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchConnectionDetails[]
+| javadoc:org.springframework.boot.elasticsearch.autoconfigure.ElasticsearchConnectionDetails[]
 | Containers named "elasticsearch" or "bitnami/elasticsearch"
 
 | javadoc:org.springframework.boot.autoconfigure.hazelcast.HazelcastConnectionDetails[]
@@ -101,22 +101,22 @@ The following service connections are currently supported:
 | javadoc:org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails[]
 | Containers named "clickhouse/clickhouse-server", "bitnami/clickhouse", "gvenzl/oracle-free", "gvenzl/oracle-xe", "mariadb", "bitnami/mariadb", "mssql/server", "mysql", "bitnami/mysql", "postgres", or "bitnami/postgresql"
 
-| javadoc:org.springframework.boot.autoconfigure.ldap.LdapConnectionDetails[]
+| javadoc:org.springframework.boot.ldap.autoconfigure.LdapConnectionDetails[]
 | Containers named "osixia/openldap", "lldap/lldap"
 
 | javadoc:org.springframework.boot.autoconfigure.mongo.MongoConnectionDetails[]
 | Containers named "mongo" or "bitnami/mongodb"
 
-| javadoc:org.springframework.boot.autoconfigure.neo4j.Neo4jConnectionDetails[]
+| javadoc:org.springframework.boot.neo4j.autoconfigure.Neo4jConnectionDetails[]
 | Containers named "neo4j" or "bitnami/neo4j"
 
-| javadoc:org.springframework.boot.actuate.autoconfigure.logging.otlp.OtlpLoggingConnectionDetails[]
+| javadoc:org.springframework.boot.opentelemetry.actuate.autoconfigure.logging.OpenTelemetryLoggingConnectionDetails[]
 | Containers named "otel/opentelemetry-collector-contrib", "grafana/otel-lgtm"
 
-| javadoc:org.springframework.boot.actuate.autoconfigure.metrics.export.otlp.OtlpMetricsConnectionDetails[]
+| javadoc:org.springframework.boot.metrics.autoconfigure.export.otlp.OtlpMetricsConnectionDetails[]
 | Containers named "otel/opentelemetry-collector-contrib", "grafana/otel-lgtm"
 
-| javadoc:org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingConnectionDetails[]
+| javadoc:org.springframework.boot.tracing.autoconfigure.otlp.OtlpTracingConnectionDetails[]
 | Containers named "otel/opentelemetry-collector-contrib", "grafana/otel-lgtm"
 
 | javadoc:org.springframework.boot.autoconfigure.pulsar.PulsarConnectionDetails[]
@@ -128,10 +128,10 @@ The following service connections are currently supported:
 | javadoc:org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails[]
 | Containers named "rabbitmq" or "bitnami/rabbitmq"
 
-| javadoc:org.springframework.boot.autoconfigure.data.redis.RedisConnectionDetails[]
+| javadoc:org.springframework.boot.data.redis.autoconfigure.RedisConnectionDetails[]
 | Containers named "redis", "bitnami/redis", "redis/redis-stack" or "redis/redis-stack-server"
 
-| javadoc:org.springframework.boot.actuate.autoconfigure.tracing.zipkin.ZipkinConnectionDetails[]
+| javadoc:org.springframework.boot.tracing.autoconfigure.zipkin.ZipkinConnectionDetails[]
 | Containers named "openzipkin/zipkin".
 |===
 

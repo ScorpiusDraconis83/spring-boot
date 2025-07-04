@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Scott Frederick
  */
 @ClassPathOverrides({ "org.springframework:spring-core:5.3.12",
-		"org.springframework.data:spring-data-relational:1.1.7.RELEASE" })
+		"org.springframework.data:spring-data-relational:1.1.7.RELEASE",
+		"org.springframework.data:spring-data-r2dbc:3.4.7" })
 class NoSuchMethodFailureAnalyzerTests {
 
 	@Test
@@ -76,7 +77,6 @@ class NoSuchMethodFailureAnalyzerTests {
 	void whenAMethodOnAClassIsMissingThenNoSuchMethodErrorIsAnalyzed() {
 		Throwable failure = createFailureForMissingMethod();
 		assertThat(failure).isNotNull();
-		failure.printStackTrace();
 		FailureAnalysis analysis = new NoSuchMethodFailureAnalyzer().analyze(failure);
 		assertThat(analysis).isNotNull();
 		assertThat(analysis.getDescription())
@@ -106,9 +106,8 @@ class NoSuchMethodFailureAnalyzerTests {
 
 	private Throwable createFailureForMissingMethod() {
 		try {
-			System.out.println(MimeType.class.getProtectionDomain().getCodeSource().getLocation());
 			MimeType mimeType = new MimeType("application", "json");
-			System.out.println(mimeType.isMoreSpecific(null));
+			mimeType.isMoreSpecific(null);
 			return null;
 		}
 		catch (Throwable ex) {

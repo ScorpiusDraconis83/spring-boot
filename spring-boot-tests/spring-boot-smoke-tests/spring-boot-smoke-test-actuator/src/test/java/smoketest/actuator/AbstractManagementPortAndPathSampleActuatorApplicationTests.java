@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalManagementPort;
-import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.web.server.test.LocalManagementPort;
+import org.springframework.boot.web.server.test.LocalServerPort;
+import org.springframework.boot.web.server.test.client.TestRestTemplate;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +67,7 @@ abstract class AbstractManagementPortAndPathSampleActuatorApplicationTests {
 		ResponseEntity<String> entity = new TestRestTemplate().withBasicAuth("user", "password")
 			.getForEntity("http://localhost:" + this.managementPort + "/admin/health", String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
-		assertThat(entity.getBody()).isEqualTo("{\"status\":\"UP\",\"groups\":[\"comp\",\"live\",\"ready\"]}");
+		assertThat(entity.getBody()).isEqualTo("{\"groups\":[\"comp\",\"live\",\"ready\"],\"status\":\"UP\"}");
 	}
 
 	@Test
@@ -76,7 +76,7 @@ abstract class AbstractManagementPortAndPathSampleActuatorApplicationTests {
 			.getForEntity("http://localhost:" + this.managementPort + "/admin/health/comp", String.class);
 		assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(entity.getBody()).contains(
-				"components\":{\"a\":{\"status\":\"UP\",\"details\":{\"hello\":\"spring-a\"}},\"c\":{\"status\":\"UP\",\"details\":{\"hello\":\"spring-c\"}}");
+				"components\":{\"a\":{\"details\":{\"hello\":\"spring-a\"},\"status\":\"UP\"},\"c\":{\"details\":{\"hello\":\"spring-c\"},\"status\":\"UP\"}}");
 	}
 
 	@Test

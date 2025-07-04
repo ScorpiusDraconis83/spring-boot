@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.annotation.ImportCandidates;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -36,10 +34,7 @@ import org.springframework.context.annotation.Import;
 /**
  * Enable auto-configuration of the Spring Application Context, attempting to guess and
  * configure beans that you are likely to need. Auto-configuration classes are usually
- * applied based on your classpath and what beans you have defined. For example, if you
- * have {@code tomcat-embedded.jar} on your classpath you are likely to want a
- * {@link TomcatServletWebServerFactory} (unless you have defined your own
- * {@link ServletWebServerFactory} bean).
+ * applied based on your classpath and what beans you have defined.
  * <p>
  * When using {@link SpringBootApplication @SpringBootApplication}, the auto-configuration
  * of the context is automatically enabled and adding this annotation has therefore no

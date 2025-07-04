@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,13 @@ class HandlerTests {
 	void assertUrlIsNotMalformedWhenUrlIsValidDoesNotThrowException() {
 		String url = "nested:" + this.temp.getAbsolutePath() + "/!nested.jar";
 		assertThatNoException().isThrownBy(() -> Handler.assertUrlIsNotMalformed(url));
+	}
+
+	@Test
+	void getHostAddressIsNull() throws Exception {
+		// gh-46063
+		String url = "nested:" + this.temp.getAbsolutePath() + "/!nested.jar";
+		assertThat(new Handler().getHostAddress(new URL(url))).isNull();
 	}
 
 }

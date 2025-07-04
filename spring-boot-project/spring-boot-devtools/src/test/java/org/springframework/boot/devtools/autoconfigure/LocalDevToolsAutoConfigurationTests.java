@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.WebProperties.Resources;
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.boot.devtools.classpath.ClassPathChangedEvent;
 import org.springframework.boot.devtools.classpath.ClassPathFileSystemWatcher;
 import org.springframework.boot.devtools.livereload.LiveReloadServer;
@@ -44,8 +42,10 @@ import org.springframework.boot.devtools.restart.FailureHandler;
 import org.springframework.boot.devtools.restart.MockRestartInitializer;
 import org.springframework.boot.devtools.restart.MockRestarter;
 import org.springframework.boot.devtools.restart.Restarter;
-import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.freemarker.autoconfigure.FreeMarkerAutoConfiguration;
+import org.springframework.boot.tomcat.TomcatWebServer;
+import org.springframework.boot.tomcat.autoconfigure.servlet.TomcatServletWebServerAutoConfiguration;
+import org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -258,14 +258,14 @@ class LocalDevToolsAutoConfigurationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ ServletWebServerFactoryAutoConfiguration.class, LocalDevToolsAutoConfiguration.class,
+	@Import({ TomcatServletWebServerAutoConfiguration.class, LocalDevToolsAutoConfiguration.class,
 			FreeMarkerAutoConfiguration.class })
 	static class Config {
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class, LocalDevToolsAutoConfiguration.class,
+	@ImportAutoConfiguration({ TomcatServletWebServerAutoConfiguration.class, LocalDevToolsAutoConfiguration.class,
 			FreeMarkerAutoConfiguration.class })
 	static class ConfigWithMockLiveReload {
 
@@ -277,7 +277,7 @@ class LocalDevToolsAutoConfigurationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import({ ServletWebServerFactoryAutoConfiguration.class, LocalDevToolsAutoConfiguration.class,
+	@Import({ TomcatServletWebServerAutoConfiguration.class, LocalDevToolsAutoConfiguration.class,
 			WebProperties.class })
 	static class WebResourcesConfig {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,6 @@ class DefaultLogbackConfiguration {
 	}
 
 	private void defaults(LogbackConfigurator config) {
-		deprecatedDefaults(config);
 		config.conversionRule("clr", ColorConverter.class, ColorConverter::new);
 		config.conversionRule("correlationId", CorrelationIdConverter.class, CorrelationIdConverter::new);
 		config.conversionRule("esb", EnclosedInSquareBracketsConverter.class, EnclosedInSquareBracketsConverter::new);
@@ -121,11 +120,6 @@ class DefaultLogbackConfiguration {
 		config.logger("org.eclipse.jetty.util.component.AbstractLifeCycle", Level.ERROR);
 		config.logger("org.hibernate.validator.internal.util.Version", Level.WARN);
 		config.logger("org.springframework.boot.actuate.endpoint.jmx", Level.WARN);
-	}
-
-	@SuppressWarnings("removal")
-	private void deprecatedDefaults(LogbackConfigurator config) {
-		config.conversionRule("applicationName", ApplicationNameConverter.class, ApplicationNameConverter::new);
 	}
 
 	void putProperty(LogbackConfigurator config, String name, String val) {

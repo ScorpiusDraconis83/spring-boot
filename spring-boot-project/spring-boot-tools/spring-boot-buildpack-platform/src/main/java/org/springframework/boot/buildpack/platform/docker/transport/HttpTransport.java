@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,22 +98,6 @@ public interface HttpTransport {
 	 * @throws IOException on IO error
 	 */
 	Response head(URI uri) throws IOException;
-
-	/**
-	 * Create the most suitable {@link HttpTransport} based on the {@link DockerHost}.
-	 * @param dockerHost the Docker host information
-	 * @return a {@link HttpTransport} instance
-	 * @deprecated since 3.5.0 for removal in 4.0.0 in favor of
-	 * {@link #create(DockerConnectionConfiguration)}
-	 */
-	@Deprecated(since = "3.5.0", forRemoval = true)
-	@SuppressWarnings("removal")
-	static HttpTransport create(
-			org.springframework.boot.buildpack.platform.docker.configuration.DockerConfiguration.DockerHostConfiguration dockerHost) {
-		ResolvedDockerHost host = ResolvedDockerHost.from(dockerHost);
-		HttpTransport remote = RemoteHttpClientTransport.createIfPossible(host);
-		return (remote != null) ? remote : LocalHttpClientTransport.create(host);
-	}
 
 	/**
 	 * Create the most suitable {@link HttpTransport} based on the {@link DockerHost}.

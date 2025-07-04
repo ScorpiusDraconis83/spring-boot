@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,14 +42,14 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.container.ContainerImageMetadata;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.bind.BoundPropertiesTrackingBindHandler;
 import org.springframework.boot.context.properties.source.ConfigurationProperty;
 import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.JdbcConnectionDetails;
 import org.springframework.boot.origin.PropertySourceOrigin;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.context.EnvironmentAware;
@@ -185,7 +185,7 @@ public class TestDatabaseAutoConfiguration {
 			if (holder.getBeanDefinition() instanceof AnnotatedBeanDefinition annotatedBeanDefinition) {
 				MethodMetadata factoryMethodMetadata = annotatedBeanDefinition.getFactoryMethodMetadata();
 				return (factoryMethodMetadata != null) && (factoryMethodMetadata.getDeclaringClassName()
-					.startsWith("org.springframework.boot.autoconfigure."));
+					.startsWith("org.springframework.boot.jdbc.autoconfigure."));
 			}
 			return false;
 		}

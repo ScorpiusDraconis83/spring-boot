@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,29 +49,6 @@ import org.springframework.util.StringUtils;
  * @since 3.3.0
  */
 public class ApplicationResourceLoader extends DefaultResourceLoader {
-
-	/**
-	 * Create a new {@code ApplicationResourceLoader}.
-	 * @deprecated since 3.4.0 for removal in 4.0.0 in favor of {@link #get()}
-	 */
-	@Deprecated(since = "3.4.0", forRemoval = true)
-	public ApplicationResourceLoader() {
-		this(null);
-	}
-
-	/**
-	 * Create a new {@code ApplicationResourceLoader}.
-	 * @param classLoader the {@link ClassLoader} to load class path resources with, or
-	 * {@code null} for using the thread context class loader at the time of actual
-	 * resource access
-	 * @deprecated since 3.4.0 for removal in 4.0.0 in favor of {@link #get(ClassLoader)}
-	 */
-	@Deprecated(since = "3.4.0", forRemoval = true)
-	public ApplicationResourceLoader(ClassLoader classLoader) {
-		super(classLoader);
-		SpringFactoriesLoader loader = SpringFactoriesLoader.forDefaultResourceLocation(classLoader);
-		getProtocolResolvers().addAll(loader.load(ProtocolResolver.class));
-	}
 
 	@Override
 	protected Resource getResourceByPath(String path) {

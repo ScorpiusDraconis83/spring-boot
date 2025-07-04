@@ -1,9 +1,25 @@
+/*
+ * Copyright 2012-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 pluginManagement {
 	evaluate(new File("${rootDir}/buildSrc/SpringRepositorySupport.groovy")).apply(this)
 	repositories {
 		mavenCentral()
 		gradlePluginPortal()
-		spring.mavenRepositories();
+		spring.mavenRepositories()
 	}
 	resolutionStrategy {
 		eachPlugin {
@@ -15,10 +31,12 @@ pluginManagement {
 			}
 		}
 	}
+	includeBuild("gradle/plugins")
 }
 
 plugins {
 	id "io.spring.develocity.conventions" version "0.0.22"
+	id "org.springframework.boot.cycle-detection"
 }
 
 rootProject.name="spring-boot-build"
@@ -38,17 +56,99 @@ settings.gradle.projectsLoaded {
 }
 
 include "spring-boot-project:spring-boot"
+include "spring-boot-project:spring-boot-activemq"
 include "spring-boot-project:spring-boot-actuator"
 include "spring-boot-project:spring-boot-actuator-autoconfigure"
+include "spring-boot-project:spring-boot-actuator-docs"
+include "spring-boot-project:spring-boot-actuator-integration-tests"
+include "spring-boot-project:spring-boot-amqp"
+include "spring-boot-project:spring-boot-artemis"
 include "spring-boot-project:spring-boot-autoconfigure"
+include "spring-boot-project:spring-boot-autoconfigure-classic"
+include "spring-boot-project:spring-boot-batch"
+include "spring-boot-project:spring-boot-cache"
+include "spring-boot-project:spring-boot-cassandra"
+include "spring-boot-project:spring-boot-cloudfoundry"
+include "spring-boot-project:spring-boot-couchbase"
+include "spring-boot-project:spring-boot-data-cassandra"
+include "spring-boot-project:spring-boot-data-commons"
+include "spring-boot-project:spring-boot-data-couchbase"
+include "spring-boot-project:spring-boot-data-elasticsearch"
+include "spring-boot-project:spring-boot-data-jdbc"
+include "spring-boot-project:spring-boot-data-jpa"
+include "spring-boot-project:spring-boot-data-ldap"
+include "spring-boot-project:spring-boot-data-mongodb"
+include "spring-boot-project:spring-boot-data-neo4j"
+include "spring-boot-project:spring-boot-data-r2dbc"
+include "spring-boot-project:spring-boot-data-redis"
+include "spring-boot-project:spring-boot-data-rest"
 include "spring-boot-project:spring-boot-dependencies"
 include "spring-boot-project:spring-boot-devtools"
 include "spring-boot-project:spring-boot-docker-compose"
 include "spring-boot-project:spring-boot-docs"
+include "spring-boot-project:spring-boot-elasticsearch"
+include "spring-boot-project:spring-boot-flyway"
+include "spring-boot-project:spring-boot-freemarker"
+include "spring-boot-project:spring-boot-graphql"
+include "spring-boot-project:spring-boot-graphql-test"
+include "spring-boot-project:spring-boot-groovy-templates"
+include "spring-boot-project:spring-boot-gson"
+include "spring-boot-project:spring-boot-h2console"
+include "spring-boot-project:spring-boot-hateoas"
+include "spring-boot-project:spring-boot-hazelcast"
+include "spring-boot-project:spring-boot-health"
+include "spring-boot-project:spring-boot-hibernate"
+include "spring-boot-project:spring-boot-http-client"
+include "spring-boot-project:spring-boot-http-converter"
+include "spring-boot-project:spring-boot-http-codec"
+include "spring-boot-project:spring-boot-integration"
+include "spring-boot-project:spring-boot-integration-tests"
+include "spring-boot-project:spring-boot-jackson"
+include "spring-boot-project:spring-boot-jdbc"
+include "spring-boot-project:spring-boot-jersey"
+include "spring-boot-project:spring-boot-jetty"
+include "spring-boot-project:spring-boot-jms"
+include "spring-boot-project:spring-boot-jooq"
+include "spring-boot-project:spring-boot-jpa"
+include "spring-boot-project:spring-boot-jsonb"
+include "spring-boot-project:spring-boot-kafka"
+include "spring-boot-project:spring-boot-ldap"
+include "spring-boot-project:spring-boot-liquibase"
+include "spring-boot-project:spring-boot-neo4j"
+include "spring-boot-project:spring-boot-mail"
+include "spring-boot-project:spring-boot-metrics"
+include "spring-boot-project:spring-boot-mongodb"
+include "spring-boot-project:spring-boot-mustache"
+include "spring-boot-project:spring-boot-netty"
+include "spring-boot-project:spring-boot-observation"
+include "spring-boot-project:spring-boot-opentelemetry"
 include "spring-boot-project:spring-boot-parent"
+include "spring-boot-project:spring-boot-pulsar"
+include "spring-boot-project:spring-boot-quartz"
+include "spring-boot-project:spring-boot-r2dbc"
+include "spring-boot-project:spring-boot-reactor"
+include "spring-boot-project:spring-boot-reactor-netty"
+include "spring-boot-project:spring-boot-restclient"
+include "spring-boot-project:spring-boot-restclient-test"
+include "spring-boot-project:spring-boot-rsocket"
+include "spring-boot-project:spring-boot-security"
+include "spring-boot-project:spring-boot-security-oauth2-authorization-server"
+include "spring-boot-project:spring-boot-security-oauth2-client"
+include "spring-boot-project:spring-boot-security-oauth2-resource-server"
+include "spring-boot-project:spring-boot-security-saml2"
+include "spring-boot-project:spring-boot-sendgrid"
+include "spring-boot-project:spring-boot-servlet"
+include "spring-boot-project:spring-boot-session"
+include "spring-boot-project:spring-boot-session-data-mongodb"
+include "spring-boot-project:spring-boot-session-data-redis"
+include "spring-boot-project:spring-boot-session-hazelcast"
+include "spring-boot-project:spring-boot-session-jdbc"
+include "spring-boot-project:spring-boot-sql"
 include "spring-boot-project:spring-boot-test"
 include "spring-boot-project:spring-boot-test-autoconfigure"
 include "spring-boot-project:spring-boot-testcontainers"
+include "spring-boot-project:spring-boot-thymeleaf"
+include "spring-boot-project:spring-boot-tomcat"
 include "spring-boot-project:spring-boot-tools:spring-boot-antlib"
 include "spring-boot-project:spring-boot-tools:spring-boot-autoconfigure-processor"
 include "spring-boot-project:spring-boot-tools:spring-boot-buildpack-platform"
@@ -66,6 +166,18 @@ include "spring-boot-project:spring-boot-tools:spring-boot-maven-plugin"
 include "spring-boot-project:spring-boot-tools:spring-boot-properties-migrator"
 include "spring-boot-project:spring-boot-tools:spring-boot-test-support"
 include "spring-boot-project:spring-boot-tools:spring-boot-test-support-docker"
+include "spring-boot-project:spring-boot-tracing"
+include "spring-boot-project:spring-boot-tx"
+include "spring-boot-project:spring-boot-undertow"
+include "spring-boot-project:spring-boot-validation"
+include "spring-boot-project:spring-boot-web-server"
+include "spring-boot-project:spring-boot-web-server-test"
+include "spring-boot-project:spring-boot-webclient"
+include "spring-boot-project:spring-boot-webflux"
+include "spring-boot-project:spring-boot-webmvc"
+include "spring-boot-project:spring-boot-webservices"
+include "spring-boot-project:spring-boot-websocket"
+include "spring-boot-project:spring-boot-zipkin"
 include "spring-boot-system-tests:spring-boot-deployment-tests"
 include "spring-boot-system-tests:spring-boot-image-tests"
 include "spring-boot-tests:spring-boot-integration-tests:spring-boot-configuration-processor-tests"

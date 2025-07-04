@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,30 @@ package org.springframework.boot.actuate.autoconfigure.web.server;
 
 import java.util.function.Consumer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.aot.AotDetector;
 import org.springframework.aot.test.generate.TestGenerationContext;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.actuate.autoconfigure.endpoint.EndpointAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.boot.testsupport.web.servlet.DirtiesUrlFactories;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.web.server.WebServer;
+import org.springframework.boot.web.server.servlet.MockServletWebServer;
+import org.springframework.boot.web.server.servlet.MockServletWebServerFactory;
+import org.springframework.boot.web.server.servlet.context.AnnotationConfigServletWebServerApplicationContext;
+import org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.aot.ApplicationContextAotGenerator;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.test.tools.CompileWithForkedClassLoader;
@@ -44,6 +50,7 @@ import org.springframework.javapoet.ClassName;
 import org.springframework.util.StringUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.willAnswer;
 
 /**
  * AOT tests for {@link ChildManagementContextInitializer}.
@@ -51,7 +58,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Phillip Webb
  */
 @ExtendWith(OutputCaptureExtension.class)
-@DirtiesUrlFactories
 class ChildManagementContextInitializerAotTests {
 
 	@Test
@@ -61,8 +67,8 @@ class ChildManagementContextInitializerAotTests {
 		WebApplicationContextRunner contextRunner = new WebApplicationContextRunner(
 				AnnotationConfigServletWebServerApplicationContext::new)
 			.withConfiguration(AutoConfigurations.of(ManagementContextAutoConfiguration.class,
-					ServletWebServerFactoryAutoConfiguration.class, ServletManagementContextAutoConfiguration.class,
-					WebEndpointAutoConfiguration.class, EndpointAutoConfiguration.class));
+					WebEndpointAutoConfiguration.class, EndpointAutoConfiguration.class))
+			.withUserConfiguration(WebServerConfiguration.class, TestServletManagementContextConfiguration.class);
 		contextRunner.withPropertyValues("server.port=0", "management.server.port=0").prepare((context) -> {
 			TestGenerationContext generationContext = new TestGenerationContext(TestTarget.class);
 			ClassName className = new ApplicationContextAotGenerator().processAheadOfTime(
@@ -75,10 +81,10 @@ class ChildManagementContextInitializerAotTests {
 				ApplicationContextInitializer<GenericApplicationContext> initializer = compiled
 					.getInstance(ApplicationContextInitializer.class, className.toString());
 				initializer.initialize(freshApplicationContext);
-				assertThat(output).satisfies(numberOfOccurrences("Tomcat started on port", 0));
+				assertThat(output).satisfies(numberOfOccurrences("WebServer started", 0));
 				TestPropertyValues.of(AotDetector.AOT_ENABLED + "=true")
 					.applyToSystemProperties(freshApplicationContext::refresh);
-				assertThat(output).satisfies(numberOfOccurrences("Tomcat started on port", 2));
+				assertThat(output).satisfies(numberOfOccurrences("WebServer started", 2));
 			});
 		});
 	}
@@ -91,6 +97,42 @@ class ChildManagementContextInitializerAotTests {
 	}
 
 	static class TestTarget {
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class TestServletManagementContextConfiguration {
+
+		@Bean
+		ManagementContextFactory managementContextFactory() {
+			return new ManagementContextFactory(WebApplicationType.SERVLET, LogOnStartServletWebServerFactory.class);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class WebServerConfiguration {
+
+		@Bean
+		LogOnStartServletWebServerFactory servletWebServerFactory() {
+			return new LogOnStartServletWebServerFactory();
+		}
+
+	}
+
+	static class LogOnStartServletWebServerFactory extends MockServletWebServerFactory {
+
+		private static final Log log = LogFactory.getLog(LogOnStartServletWebServerFactory.class);
+
+		@Override
+		public MockServletWebServer getWebServer(ServletContextInitializer... initializers) {
+			WebServer webServer = super.getWebServer(initializers);
+			willAnswer((invocation) -> {
+				log.info("WebServer started");
+				return null;
+			}).given(webServer).start();
+			return (MockServletWebServer) webServer;
+		}
 
 	}
 

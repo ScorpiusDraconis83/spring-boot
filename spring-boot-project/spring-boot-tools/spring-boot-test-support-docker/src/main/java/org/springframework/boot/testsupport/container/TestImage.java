@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.grafana.LgtmStackContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.ldap.LLdapContainer;
+import org.testcontainers.mongodb.MongoDBAtlasLocalContainer;
 import org.testcontainers.redpanda.RedpandaContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -83,17 +84,6 @@ public enum TestImage {
 	 */
 	CASSANDRA("cassandra", "3.11.10", () -> CassandraContainer.class,
 			(container) -> ((CassandraContainer) container).withStartupTimeout(Duration.ofMinutes(10))),
-
-	/**
-	 * A container image suitable for testing Cassandra using the deprecated
-	 * {@link org.testcontainers.containers.CassandraContainer}.
-	 * @deprecated since 3.4.0 for removal in 4.0.0 in favor of {@link #CASSANDRA}
-	 */
-	@SuppressWarnings("deprecation")
-	@Deprecated(since = "3.4.0", forRemoval = true)
-	CASSANDRA_DEPRECATED("cassandra", "3.11.10", () -> org.testcontainers.containers.CassandraContainer.class,
-			(container) -> ((org.testcontainers.containers.CassandraContainer<?>) container)
-				.withStartupTimeout(Duration.ofMinutes(10))),
 
 	/**
 	 * A container image suitable for testing ClickHouse.
@@ -142,16 +132,6 @@ public enum TestImage {
 	CONFLUENT_KAFKA("confluentinc/cp-kafka", "7.4.0", () -> ConfluentKafkaContainer.class),
 
 	/**
-	 * A container image suitable for testing Confluent's distribution of Kafka using the
-	 * deprecated {@link org.testcontainers.containers.KafkaContainer}.
-	 * @deprecated since 3.4.0 for removal in 4.0.0 in favor of {@link #CONFLUENT_KAFKA}
-	 */
-	@SuppressWarnings("deprecation")
-	@Deprecated(since = "3.4.0", forRemoval = true)
-	CONFLUENT_KAFKA_DEPRECATED("confluentinc/cp-kafka", "7.4.0",
-			() -> org.testcontainers.containers.KafkaContainer.class),
-
-	/**
 	 * A container image suitable for testing LLDAP.
 	 */
 	LLDAP("lldap/lldap", "v0.6.1-alpine", () -> LLdapContainer.class),
@@ -176,6 +156,13 @@ public enum TestImage {
 	 */
 	MONGODB("mongo", "5.0.17", () -> MongoDBContainer.class,
 			(container) -> ((MongoDBContainer) container).withStartupAttempts(5)
+				.withStartupTimeout(Duration.ofMinutes(5))),
+
+	/**
+	 * A container image suitable for testing MongoDB Atlas.
+	 */
+	MONGODB_ATLAS("mongodb/mongodb-atlas-local", "8.0.4", () -> MongoDBAtlasLocalContainer.class,
+			(container) -> ((MongoDBAtlasLocalContainer) container).withStartupAttempts(5)
 				.withStartupTimeout(Duration.ofMinutes(5))),
 
 	/**

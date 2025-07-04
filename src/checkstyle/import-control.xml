@@ -5,6 +5,7 @@
 	<disallow pkg="io.micrometer" />
 	<disallow pkg="org.springframework.lang" />
 	<allow pkg=".*" regex="true" />
+
 	<subpackage name="autoconfigure">
 		<disallow class="org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"/>
 		<subpackage name="web">
@@ -17,12 +18,20 @@
 			<subpackage name="client">
 				<allow pkg="org.springframework.boot.web.client" />
 			</subpackage>
-			<subpackage name="embedded">
-				<allow pkg="org.springframework.boot.web.embedded" />
+			<subpackage name="server">
+				<allow pkg="org.springframework.boot.web.server" />
+				<subpackage name="reactive">
+					<allow pkg="org.springframework.boot.web.reactive.server" />
+				</subpackage>
+				<subpackage name="servlet">
+					<allow pkg="jakarta.servlet" />
+					<allow pkg="org.springframework.boot.web.servlet" />
+					<allow pkg="org.springframework.boot.web.error" />
+					<allow pkg="org.springframework.web.servlet" />
+				</subpackage>
 			</subpackage>
 			<subpackage name="servlet">
 				<allow pkg="jakarta.servlet" />
-				<allow pkg="org.springframework.boot.web.embedded" />
 				<allow pkg="org.springframework.boot.web.servlet" />
 				<allow pkg="org.springframework.web.servlet" />
 				<subpackage name="error">
@@ -31,7 +40,6 @@
 			</subpackage>
 			<subpackage name="reactive">
 				<allow pkg="org.springframework.boot.web.codec" />
-				<allow pkg="org.springframework.boot.web.embedded" />
 				<allow pkg="org.springframework.boot.web.reactive" />
 				<allow pkg="org.springframework.web.reactive" />
 				<subpackage name="error">
@@ -41,8 +49,27 @@
 		</subpackage>
 	</subpackage>
 
-	<subpackage name="actuate">
+	<subpackage name="metrics">
 		<allow pkg="io.micrometer" />
+	</subpackage>
+
+	<subpackage name=".*\.metrics" regex="true">
+		<allow pkg="io.micrometer" />
+	</subpackage>
+
+	<subpackage name=".*\.autoconfigure" regex="true">
+		<allow pkg="io.micrometer" />
+	</subpackage>
+
+	<subpackage name="[^.]+\.actuate" regex="true">
+		<subpackage name="endpoint">
+			<file name=".*Endpoint(WebExtension)?" regex="true">
+				<allow pkg="org.springframework.lang"/>
+			</file>
+		</subpackage>
+	</subpackage>
+
+	<subpackage name="actuate">
 		<!-- Endpoint infrastructure -->
 		<subpackage name="endpoint">
 			<disallow pkg="org.springframework.http" />
@@ -65,9 +92,6 @@
 				</subpackage>
 			</subpackage>
 		</subpackage>
-		<file name=".*Endpoint(WebExtension)?" regex="true">
-			<allow pkg="org.springframework.lang"/>
-		</file>
 	</subpackage>
 
 	<subpackage name="docs">
@@ -102,39 +126,60 @@
 		<!-- Common -->
 		<subpackage name="client">
 		</subpackage>
+		<subpackage name="context">
+			<allow pkg="org.springframework.context" />
+			<subpackage name="servlet">
+				<allow pkg="org.springframework.boot.web.servlet" />
+				<allow pkg="jakarta.servlet" />
+			</subpackage>
+		</subpackage>
 		<subpackage name="server">
+			<allow pkg="org.springframework.boot.web.error" />
+			<allow pkg="org.springframework.boot.web.server" />
 			<disallow pkg="org.springframework.context" />
-			<allow pkg="org.springframework.boot.web.server"/>
+			<subpackage name="autoconfigure">
+				<allow pkg="org.springframework.context" />
+				<subpackage name="servlet">
+					<allow pkg="jakarta.servlet" />
+					<allow pkg="org.springframework.boot.web.servlet" />
+				</subpackage>
+			</subpackage>
 			<subpackage name="context">
 				<allow pkg="org.springframework.context" />
 			</subpackage>
-		</subpackage>
-		<subpackage name="context">
-			<allow pkg="org.springframework.boot.web.server" />
+			<subpackage name="reactive">
+				<subpackage name="context">
+					<allow pkg="org.springframework.context" />
+					<allow pkg="org.springframework.web.context" />
+					<allow pkg="org.springframework.boot.web.context.reactive" />
+				</subpackage>
+			</subpackage>
+			<subpackage name="servlet">
+				<allow pkg="jakarta.servlet" />
+				<allow pkg="org.springframework.boot.web.servlet" />
+				<subpackage name="context">
+					<allow pkg="org.springframework.context" />
+					<allow pkg="org.springframework.web.context" />
+					<allow pkg="org.springframework.boot.web.context.servlet" />
+				</subpackage>
+			</subpackage>
+			<subpackage name="test">
+				<allow pkg=".*" regex="true" />
+			</subpackage>
 		</subpackage>
 
 		<!-- Servlet -->
 		<subpackage name="servlet">
 			<allow pkg="jakarta.servlet" />
-			<subpackage name="context">
-				<allow pkg="org.springframework.boot.web.context" />
-				<allow pkg="org.springframework.boot.web.server" />
-				<allow pkg="org.springframework.boot.web.servlet.server" />
-				<allow pkg="org.springframework.boot.web.servlet" />
-			</subpackage>
 			<subpackage name="filter">
 				<allow pkg="jakarta.servlet" />
 				<allow pkg="org.springframework.boot.web.servlet" />
 			</subpackage>
-			<subpackage name="server">
-				<disallow pkg="org.springframework.context" />
-				<allow pkg="org.springframework.boot.web.server" />
-				<allow pkg="org.springframework.boot.web.servlet" />
-			</subpackage>
 			<subpackage name="support">
 				<allow pkg="jakarta.servlet" />
+				<allow pkg="org.springframework.boot.web.error" />
+				<allow pkg="org.springframework.boot.web.context.servlet" />
 				<allow pkg="org.springframework.boot.web.servlet" />
-				<allow pkg="org.springframework.boot.web.server" />
 			</subpackage>
 			<subpackage name="view">
 				<allow pkg="org.springframework.web.servlet" />
@@ -149,15 +194,9 @@
 		<subpackage name="reactive">
 			<subpackage name="context">
 				<allow pkg="org.springframework.boot.web.context" />
-				<allow pkg="org.springframework.boot.web.server" />
-				<allow pkg="org.springframework.boot.web.reactive.server" />
 			</subpackage>
 			<subpackage name="error">
 				<allow pkg="org.springframework.boot.web.error" />
-			</subpackage>
-			<subpackage name="server">
-				<allow pkg="org.springframework.boot.web.server" />
-				<disallow pkg="org.springframework.context" />
 			</subpackage>
 			<subpackage name="result">
 				<subpackage name="view">
@@ -166,14 +205,6 @@
 			</subpackage>
 		</subpackage>
 
-		<!-- Embedded Servers -->
-		<subpackage name="embedded">
-			<allow pkg="jakarta.servlet" />
-			<allow pkg="org.springframework.boot.web.server" />
-			<allow pkg="org.springframework.boot.web.servlet" />
-			<allow pkg="org.springframework.boot.web.servlet.server" />
-			<allow pkg="org.springframework.boot.web.reactive.server" />
-		</subpackage>
-
 	</subpackage>
+
 </import-control>

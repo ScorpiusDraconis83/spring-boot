@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.springframework.boot.actuate.availability.ReadinessStateHealthIndicat
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.availability.ApplicationAvailabilityAutoConfiguration;
 import org.springframework.boot.availability.ApplicationAvailability;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -58,6 +59,13 @@ class AvailabilityProbesAutoConfigurationTests {
 	void probesWhenPropertyEnabledAddsBeans() {
 		this.contextRunner.withPropertyValues("management.endpoint.health.probes.enabled=true")
 			.run(this::hasProbesBeans);
+	}
+
+	@Test
+	void probesWhenPropertyEnabledButNoHealthDependencyDoesNotAddBeans() {
+		this.contextRunner.withPropertyValues("management.endpoint.health.probes.enabled=true")
+			.withClassLoader(new FilteredClassLoader("org.springframework.boot.health"))
+			.run(this::doesNotHaveProbeBeans);
 	}
 
 	@Test

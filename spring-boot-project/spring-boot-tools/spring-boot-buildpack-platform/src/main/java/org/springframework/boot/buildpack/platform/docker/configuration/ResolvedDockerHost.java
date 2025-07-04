@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,20 +74,6 @@ public class ResolvedDockerHost extends DockerHost {
 		catch (Exception ex) {
 			return false;
 		}
-	}
-
-	/**
-	 * Create a new {@link ResolvedDockerHost} from the given host configuration.
-	 * @param dockerHostConfiguration the host configuration or {@code null}
-	 * @return the resolved docker host
-	 * @deprecated since 3.5.0 for removal in 4.0.0 in favor of
-	 * {@link #from(DockerConnectionConfiguration)}
-	 */
-	@Deprecated(since = "3.5.0", forRemoval = true)
-	@SuppressWarnings("removal")
-	public static ResolvedDockerHost from(DockerConfiguration.DockerHostConfiguration dockerHostConfiguration) {
-		return from(Environment.SYSTEM,
-				DockerConfiguration.DockerHostConfiguration.asConnectionConfiguration(dockerHostConfiguration));
 	}
 
 	/**

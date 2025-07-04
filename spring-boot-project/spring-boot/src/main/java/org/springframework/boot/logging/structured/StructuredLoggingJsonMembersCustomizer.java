@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 
 package org.springframework.boot.logging.structured;
-
-import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
 
 import org.springframework.boot.json.JsonWriter;
 import org.springframework.boot.json.JsonWriter.Members;
@@ -38,7 +36,7 @@ import org.springframework.core.env.Environment;
  * When using Logback, implementing classes can also use the following parameter types in
  * the constructor:
  * <ul>
- * <li>{@link ThrowableProxyConverter}</li>
+ * <li>{@code ch.qos.logback.classic.pattern.ThrowableProxyConverter}</li>
  * </ul>
  *
  * @param <T> the type being written

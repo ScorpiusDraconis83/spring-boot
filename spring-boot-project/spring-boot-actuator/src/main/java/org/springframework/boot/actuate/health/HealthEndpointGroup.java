@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2021 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.springframework.boot.actuate.health;
 
 import org.springframework.boot.actuate.endpoint.SecurityContext;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthContributor;
 
 /**
  * A logical grouping of {@link HealthContributor health contributors} that can be exposed
@@ -36,8 +38,8 @@ public interface HealthEndpointGroup {
 	boolean isMember(String name);
 
 	/**
-	 * Returns if {@link CompositeHealth#getComponents() health components} should be
-	 * shown in the response.
+	 * Returns if {@link CompositeHealthDescriptor#getComponents() health components}
+	 * should be shown in the response.
 	 * @param securityContext the endpoint security context
 	 * @return {@code true} to shown details or {@code false} to hide them
 	 */

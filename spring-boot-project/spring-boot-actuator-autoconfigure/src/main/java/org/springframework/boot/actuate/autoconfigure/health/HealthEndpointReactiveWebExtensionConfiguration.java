@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,18 @@
 
 package org.springframework.boot.actuate.autoconfigure.health;
 
-import java.util.Collection;
-
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.actuate.autoconfigure.endpoint.expose.EndpointExposure;
-import org.springframework.boot.actuate.endpoint.web.EndpointMapping;
-import org.springframework.boot.actuate.endpoint.web.ExposableWebEndpoint;
-import org.springframework.boot.actuate.endpoint.web.WebEndpointsSupplier;
-import org.springframework.boot.actuate.endpoint.web.WebServerNamespace;
-import org.springframework.boot.actuate.endpoint.web.reactive.AdditionalHealthEndpointPathsWebFluxHandlerMapping;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.health.HealthEndpointGroups;
-import org.springframework.boot.actuate.health.ReactiveHealthContributorRegistry;
 import org.springframework.boot.actuate.health.ReactiveHealthEndpointWebExtension;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
+import org.springframework.boot.health.registry.ReactiveHealthContributorRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -52,27 +47,12 @@ class HealthEndpointReactiveWebExtensionConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnBean(HealthEndpoint.class)
 	ReactiveHealthEndpointWebExtension reactiveHealthEndpointWebExtension(
-			ReactiveHealthContributorRegistry reactiveHealthContributorRegistry, HealthEndpointGroups groups,
+			ReactiveHealthContributorRegistry reactiveHealthContributorRegistry,
+			ObjectProvider<HealthContributorRegistry> healthContributorRegistry, HealthEndpointGroups groups,
 			HealthEndpointProperties properties) {
-		return new ReactiveHealthEndpointWebExtension(reactiveHealthContributorRegistry, groups,
+		return new ReactiveHealthEndpointWebExtension(reactiveHealthContributorRegistry,
+				healthContributorRegistry.getIfAvailable(), groups,
 				properties.getLogging().getSlowIndicatorThreshold());
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	static class WebFluxAdditionalHealthEndpointPathsConfiguration {
-
-		@Bean
-		AdditionalHealthEndpointPathsWebFluxHandlerMapping healthEndpointWebFluxHandlerMapping(
-				WebEndpointsSupplier webEndpointsSupplier, HealthEndpointGroups groups) {
-			Collection<ExposableWebEndpoint> webEndpoints = webEndpointsSupplier.getEndpoints();
-			ExposableWebEndpoint health = webEndpoints.stream()
-				.filter((endpoint) -> endpoint.getEndpointId().equals(HealthEndpoint.ID))
-				.findFirst()
-				.orElse(null);
-			return new AdditionalHealthEndpointPathsWebFluxHandlerMapping(new EndpointMapping(""), health,
-					groups.getAllWithAdditionalPath(WebServerNamespace.SERVER));
-		}
-
 	}
 
 }

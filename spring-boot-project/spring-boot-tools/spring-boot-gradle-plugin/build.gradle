@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import org.gradle.plugins.ide.eclipse.EclipsePlugin
 import org.gradle.plugins.ide.eclipse.model.Classpath
 import org.gradle.plugins.ide.eclipse.model.Library
@@ -49,13 +65,10 @@ dependencies {
 	testImplementation("net.java.dev.jna:jna-platform")
 	testImplementation("org.apache.commons:commons-compress")
 	testImplementation("org.apache.httpcomponents.client5:httpclient5")
-	testImplementation("org.assertj:assertj-core")
 	testImplementation("org.graalvm.buildtools:native-gradle-plugin")
 	testImplementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 	testImplementation("org.jetbrains.kotlin:kotlin-compiler-runner:$kotlinVersion")
 	testImplementation("org.jetbrains.kotlin:kotlin-daemon-client:$kotlinVersion")
-	testImplementation("org.junit.jupiter:junit-jupiter")
-	testImplementation("org.mockito:mockito-core")
 	testImplementation("org.tomlj:tomlj:1.0.0")
 }
 

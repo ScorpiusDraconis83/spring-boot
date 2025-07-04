@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,16 +53,6 @@ public abstract class FileUtils {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Generate a SHA-1 Hash for a given file.
-	 * @param file the file to hash
-	 * @return the hash value as a String
-	 * @throws IOException if the file cannot be read
-	 */
-	public static String sha1Hash(File file) throws IOException {
-		return Digest.sha1(InputStreamSupplier.forFile(file));
 	}
 
 	/**

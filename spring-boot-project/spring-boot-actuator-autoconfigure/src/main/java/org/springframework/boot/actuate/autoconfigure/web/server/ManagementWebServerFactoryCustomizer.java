@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import java.util.List;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.util.LambdaSafe;
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.server.WebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
 import org.springframework.core.Ordered;
 
 /**
@@ -45,15 +45,6 @@ public class ManagementWebServerFactoryCustomizer<T extends ConfigurableWebServe
 	private final ListableBeanFactory beanFactory;
 
 	private final Class<? extends WebServerFactoryCustomizer<?>>[] customizerClasses;
-
-	@SafeVarargs
-	@SuppressWarnings("varargs")
-	@Deprecated(since = "3.5.0", forRemoval = true)
-	protected ManagementWebServerFactoryCustomizer(ListableBeanFactory beanFactory,
-			Class<? extends WebServerFactoryCustomizer<?>>... customizerClasses) {
-		this.beanFactory = beanFactory;
-		this.customizerClasses = customizerClasses;
-	}
 
 	/**
 	 * Creates a new customizer that will retrieve beans using the given

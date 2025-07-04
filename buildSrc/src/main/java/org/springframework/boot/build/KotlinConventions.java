@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ class KotlinConventions {
 
 	private static final JvmTarget JVM_TARGET = JvmTarget.JVM_17;
 
-	private static final KotlinVersion KOTLIN_VERSION = KotlinVersion.KOTLIN_2_1;
+	private static final KotlinVersion KOTLIN_VERSION = KotlinVersion.KOTLIN_2_2;
 
 	void apply(Project project) {
 		project.getPlugins().withId("org.jetbrains.kotlin.jvm", (plugin) -> {
@@ -70,7 +70,8 @@ class KotlinConventions {
 		compilerOptions.getLanguageVersion().set(KOTLIN_VERSION);
 		compilerOptions.getJvmTarget().set(JVM_TARGET);
 		compilerOptions.getAllWarningsAsErrors().set(true);
-		compilerOptions.getFreeCompilerArgs().addAll("-Xsuppress-version-warnings");
+		compilerOptions.getFreeCompilerArgs()
+			.addAll("-Xsuppress-version-warnings", "-Xannotation-default-target=param-property");
 	}
 
 	private void configureDokkatoo(Project project) {

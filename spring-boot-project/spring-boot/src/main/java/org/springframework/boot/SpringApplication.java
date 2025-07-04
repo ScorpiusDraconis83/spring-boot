@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,14 +61,11 @@ import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
 import org.springframework.boot.convert.ApplicationConversionService;
-import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
@@ -384,7 +381,6 @@ public class SpringApplication {
 		listeners.contextPrepared(context);
 		bootstrapContext.close(context);
 		if (this.properties.isLogStartupInfo()) {
-			logStartupInfo(context.getParent() == null);
 			logStartupInfo(context);
 			logStartupProfileInfo(context);
 		}
@@ -624,17 +620,6 @@ public class SpringApplication {
 		if (isRoot) {
 			new StartupInfoLogger(this.mainApplicationClass, context.getEnvironment()).logStarting(getApplicationLog());
 		}
-	}
-
-	/**
-	 * Called to log startup information, subclasses may override to add additional
-	 * logging.
-	 * @param isRoot true if this application is the root of a context hierarchy
-	 * @deprecated since 3.4.0 for removal in 4.0.0 in favor of
-	 * {@link #logStartupInfo(ConfigurableApplicationContext)}
-	 */
-	@Deprecated(since = "3.4.0", forRemoval = true)
-	protected void logStartupInfo(boolean isRoot) {
 	}
 
 	/**
@@ -1222,11 +1207,9 @@ public class SpringApplication {
 
 	/**
 	 * Sets the factory that will be called to create the application context. If not set,
-	 * defaults to a factory that will create
-	 * {@link AnnotationConfigServletWebServerApplicationContext} for servlet web
-	 * applications, {@link AnnotationConfigReactiveWebServerApplicationContext} for
-	 * reactive web applications, and {@link AnnotationConfigApplicationContext} for
-	 * non-web applications.
+	 * defaults to a factory that will create a context that is appropriate for the
+	 * application's type (a reactive web application, a servlet web application, or a
+	 * non-web application).
 	 * @param applicationContextFactory the factory for the context
 	 * @since 2.4.0
 	 */

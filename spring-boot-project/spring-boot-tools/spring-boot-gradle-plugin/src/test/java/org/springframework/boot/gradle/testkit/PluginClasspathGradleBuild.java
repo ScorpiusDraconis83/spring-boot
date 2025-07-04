@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,9 @@ import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpRequest;
 import org.apache.hc.core5.http2.HttpVersionPolicy;
 import org.gradle.testkit.runner.GradleRunner;
+import org.jetbrains.kotlin.gradle.fus.BuildUidService;
 import org.jetbrains.kotlin.gradle.model.KotlinProject;
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilerPluginSupportPlugin;
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin;
 import org.jetbrains.kotlin.project.model.LanguageSettings;
 import org.jetbrains.kotlin.tooling.core.KotlinToolingVersion;
 import org.tomlj.Toml;
@@ -85,7 +85,6 @@ public class PluginClasspathGradleBuild extends GradleBuild {
 		classpath.add(new File(pathOfJarContaining(DependencyManagementPlugin.class)));
 		if (this.kotlin) {
 			classpath.add(new File(pathOfJarContaining("org.jetbrains.kotlin.cli.common.PropertiesKt")));
-			classpath.add(new File(pathOfJarContaining(KotlinPlatformJvmPlugin.class)));
 			classpath.add(new File(pathOfJarContaining(KotlinProject.class)));
 			classpath.add(new File(pathOfJarContaining(KotlinToolingVersion.class)));
 			classpath.add(new File(pathOfJarContaining("org.jetbrains.kotlin.build.report.metrics.BuildTime")));
@@ -94,6 +93,7 @@ public class PluginClasspathGradleBuild extends GradleBuild {
 			classpath.add(new File(pathOfJarContaining("org.jetbrains.kotlin.konan.library.KonanLibrary")));
 			classpath.add(new File(pathOfJarContaining(KotlinCompilerPluginSupportPlugin.class)));
 			classpath.add(new File(pathOfJarContaining(LanguageSettings.class)));
+			classpath.add(new File(pathOfJarContaining(BuildUidService.class)));
 		}
 		classpath.add(new File(pathOfJarContaining("org.apache.commons.lang3.ArrayFill")));
 		classpath.add(new File(pathOfJarContaining("org.apache.commons.io.Charsets")));

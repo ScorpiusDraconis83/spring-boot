@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,8 @@ class ResourcesTests {
 
 	@Test
 	void whenAddPackageThenNamedResourcesFromPackageAreCreatedAndCanBeFound() {
-		this.resources.addPackage(getClass().getPackage(), new String[] { "resource-1.txt", "sub/resource-3.txt" });
+		this.resources.addPackage(getClass().getPackage().getName(),
+				new String[] { "resource-1.txt", "sub/resource-3.txt" });
 		assertThat(this.root.resolve("resource-1.txt")).hasContent("one");
 		assertThat(this.root.resolve("resource-2.txt")).doesNotExist();
 		assertThat(this.root.resolve("sub/resource-3.txt")).hasContent("three");
@@ -96,7 +97,7 @@ class ResourcesTests {
 
 	@Test
 	void whenAddPackageAndDeleteThenResourcesDoNotExistAndCannotBeFound() {
-		this.resources.addPackage(getClass().getPackage(),
+		this.resources.addPackage(getClass().getPackage().getName(),
 				new String[] { "resource-1.txt", "resource-2.txt", "sub/resource-3.txt" });
 		assertThat(this.root.resolve("resource-1.txt")).hasContent("one");
 		assertThat(this.root.resolve("resource-2.txt")).hasContent("two");

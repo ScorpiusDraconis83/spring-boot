@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ class HealthEndpointWebExtensionRuntimeHintsTests {
 	void shouldRegisterHints() {
 		RuntimeHints runtimeHints = new RuntimeHints();
 		new HealthEndpointWebExtensionRuntimeHints().registerHints(runtimeHints, getClass().getClassLoader());
-		Set<Class<?>> bindingTypes = Set.of(Health.class, SystemHealth.class, CompositeHealth.class);
+		Set<Class<?>> bindingTypes = Set.of(IndicatedHealthDescriptor.class, SystemHealthDescriptor.class,
+				CompositeHealthDescriptor.class);
 		for (Class<?> bindingType : bindingTypes) {
 			assertThat(RuntimeHintsPredicates.reflection()
 				.onType(bindingType)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,23 +27,8 @@ import org.springframework.core.annotation.AliasFor;
 
 /**
  * Configures the base packages used by auto-configuration when scanning for entity
- * classes.
- * <p>
- * Using {@code @EntityScan} will cause auto-configuration to:
- * <ul>
- * <li>Set the
- * {@link org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean#setPackagesToScan(String...)
- * packages scanned} for JPA entities.</li>
- * <li>Set the
- * {@link org.springframework.data.mapping.context.AbstractMappingContext#setInitialEntitySet(java.util.Set)
- * initial entity set} used with Spring Data
- * {@link org.springframework.data.mongodb.core.mapping.MongoMappingContext MongoDB},
- * {@link org.springframework.data.neo4j.core.mapping.Neo4jMappingContext Neo4j},
- * {@link org.springframework.data.cassandra.core.mapping.CassandraMappingContext
- * Cassandra} and
- * {@link org.springframework.data.couchbase.core.mapping.CouchbaseMappingContext
- * Couchbase} mapping contexts.</li>
- * </ul>
+ * classes. Refer to the documentation of the data technology you are using for more
+ * details.
  * <p>
  * One of {@link #basePackageClasses()}, {@link #basePackages()} or its alias
  * {@link #value()} may be specified to define specific packages to scan. If specific
@@ -51,7 +36,7 @@ import org.springframework.core.annotation.AliasFor;
  * annotation.
  *
  * @author Phillip Webb
- * @since 1.4.0
+ * @since 4.0.0
  * @see EntityScanPackages
  */
 @Target(ElementType.TYPE)

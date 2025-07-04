@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 plugins {
 	id "java-library"
 	id "org.springframework.boot.auto-configuration"
@@ -29,17 +45,21 @@ dependencies {
 	intTestDependencies(project(":spring-boot-project:spring-boot-starters:spring-boot-starter-web"))
 
 	intTestImplementation(project(":spring-boot-project:spring-boot-autoconfigure"))
+	intTestImplementation(project(":spring-boot-project:spring-boot-restclient"))
 	intTestImplementation(project(":spring-boot-project:spring-boot-test"))
 	intTestImplementation(project(":spring-boot-project:spring-boot-tools:spring-boot-test-support"))
+	intTestImplementation(project(":spring-boot-project:spring-boot-web-server-test"))
 	intTestImplementation("org.apache.httpcomponents.client5:httpclient5")
-	intTestImplementation("org.assertj:assertj-core")
-	intTestImplementation("org.awaitility:awaitility")
-	intTestImplementation("org.junit.jupiter:junit-jupiter")
 	intTestImplementation("net.bytebuddy:byte-buddy")
 
 	intTestRuntimeOnly("org.springframework:spring-web")
 
-	optional("io.projectreactor:reactor-core")
+	optional(project(":spring-boot-project:spring-boot-jdbc"))
+	optional(project(":spring-boot-project:spring-boot-jpa"))
+	optional(project(":spring-boot-project:spring-boot-r2dbc"))
+	optional(project(":spring-boot-project:spring-boot-reactor"))
+	optional(project(":spring-boot-project:spring-boot-security"))
+	optional(project(":spring-boot-project:spring-boot-web-server"))
 	optional("io.r2dbc:r2dbc-spi")
 	optional("jakarta.servlet:jakarta.servlet-api")
 	optional("org.apache.derby:derbytools")
@@ -52,8 +72,11 @@ dependencies {
 	optional("org.springframework.data:spring-data-redis")
 	optional("org.springframework.session:spring-session-core")
 
-	testImplementation(project(":spring-boot-project:spring-boot-tools:spring-boot-test-support"))
+	testImplementation(project(":spring-boot-project:spring-boot-freemarker"))
 	testImplementation(project(":spring-boot-project:spring-boot-test"))
+	testImplementation(project(":spring-boot-project:spring-boot-tomcat"))
+	testImplementation(project(":spring-boot-project:spring-boot-tools:spring-boot-test-support"))
+	testImplementation(testFixtures(project(":spring-boot-project:spring-boot-r2dbc")))
 	testImplementation("ch.qos.logback:logback-classic")
 	testImplementation("com.h2database:h2")
 	testImplementation("com.zaxxer:HikariCP")
@@ -62,21 +85,13 @@ dependencies {
 	testImplementation("org.apache.tomcat.embed:tomcat-embed-websocket")
 	testImplementation("org.apache.tomcat.embed:tomcat-embed-core")
 	testImplementation("org.apache.tomcat.embed:tomcat-embed-jasper")
-	testImplementation("org.assertj:assertj-core")
-	testImplementation("org.awaitility:awaitility")
 	testImplementation("org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jakarta-client")
-	testImplementation("org.hamcrest:hamcrest-library")
 	testImplementation("org.hsqldb:hsqldb")
-	testImplementation("org.junit.jupiter:junit-jupiter")
-	testImplementation("org.mockito:mockito-core")
-	testImplementation("org.mockito:mockito-junit-jupiter")
 	testImplementation("org.postgresql:postgresql")
-	testImplementation("org.springframework:spring-test")
 	testImplementation("org.springframework:spring-webmvc")
 	testImplementation("org.springframework:spring-websocket")
 	testImplementation("org.springframework.hateoas:spring-hateoas")
 	testImplementation("org.springframework.security:spring-security-test")
-	testImplementation("org.freemarker:freemarker")
 
 	testRuntimeOnly("org.aspectj:aspectjweaver")
 	testRuntimeOnly("org.yaml:snakeyaml")

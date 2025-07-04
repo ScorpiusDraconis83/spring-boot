@@ -1,0 +1,3 @@
+org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration
+org.springframework.boot.mongodb.autoconfigure.MongoReactiveAutoConfiguration
+org.springframework.boot.mongodb.autoconfigure.metrics.MongoMetricsAutoConfiguration

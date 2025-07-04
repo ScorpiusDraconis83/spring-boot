@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,15 +38,6 @@ class SbomEndpointAutoConfigurationTests {
 	@Test
 	void runWhenWebExposedShouldHaveEndpointBeanAndWebExtension() {
 		this.contextRunner.withPropertyValues("management.endpoints.web.exposure.include=sbom")
-			.run((context) -> assertThat(context).hasSingleBean(SbomEndpoint.class)
-				.hasSingleBean(SbomEndpointWebExtension.class));
-	}
-
-	@Test
-	void runWhenCloudFoundryExposedShouldHaveEndpointBeanAndWebExtension() {
-		this.contextRunner
-			.withPropertyValues("management.endpoints.cloud-foundry.exposure.include=sbom",
-					"spring.main.cloud-platform=cloud_foundry")
 			.run((context) -> assertThat(context).hasSingleBean(SbomEndpoint.class)
 				.hasSingleBean(SbomEndpointWebExtension.class));
 	}

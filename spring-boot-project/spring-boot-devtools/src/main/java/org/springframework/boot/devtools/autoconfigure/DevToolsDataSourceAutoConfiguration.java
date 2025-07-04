@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
-import org.springframework.boot.autoconfigure.orm.jpa.EntityManagerFactoryDependsOnPostProcessor;
-import org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration.DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor;
+import org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration.DatabaseShutdownExecutorEntityManagerFactoryDependsOnConfiguration;
 import org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration.DevToolsDataSourceCondition;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
+import org.springframework.boot.jpa.autoconfigure.EntityManagerFactoryDependsOnPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ConfigurationCondition;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -60,8 +61,8 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 @ConditionalOnClass(DataSource.class)
 @ConditionalOnEnabledDevTools
 @Conditional(DevToolsDataSourceCondition.class)
-@AutoConfiguration(after = DataSourceAutoConfiguration.class)
-@Import(DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor.class)
+@AutoConfiguration(afterName = "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
+@Import(DatabaseShutdownExecutorEntityManagerFactoryDependsOnConfiguration.class)
 public class DevToolsDataSourceAutoConfiguration {
 
 	@Bean
@@ -70,12 +71,19 @@ public class DevToolsDataSourceAutoConfiguration {
 		return new NonEmbeddedInMemoryDatabaseShutdownExecutor(dataSource, dataSourceProperties);
 	}
 
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass({ EntityManagerFactoryDependsOnPostProcessor.class,
+			LocalContainerEntityManagerFactoryBean.class })
+	@ConditionalOnBean(AbstractEntityManagerFactoryBean.class)
+	@Import(DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor.class)
+	static class DatabaseShutdownExecutorEntityManagerFactoryDependsOnConfiguration {
+
+	}
+
 	/**
 	 * Post processor to ensure that {@link jakarta.persistence.EntityManagerFactory}
 	 * beans depend on the {@code inMemoryDatabaseShutdownExecutor} bean.
 	 */
-	@ConditionalOnClass(LocalContainerEntityManagerFactoryBean.class)
-	@ConditionalOnBean(AbstractEntityManagerFactoryBean.class)
 	static class DatabaseShutdownExecutorEntityManagerFactoryDependsOnPostProcessor
 			extends EntityManagerFactoryDependsOnPostProcessor {
 

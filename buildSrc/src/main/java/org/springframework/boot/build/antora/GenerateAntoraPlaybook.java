@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2024 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public abstract class GenerateAntoraPlaybook extends DefaultTask {
 		return project.provider(() -> {
 			Path playbookDir = toRealPath(getOutputFile().get().getAsFile().toPath()).getParent();
 			Path outputDir = toRealPath(siteDirectory);
-			return "." + File.separator + playbookDir.relativize(outputDir).toString();
+			return "." + File.separator + playbookDir.relativize(outputDir);
 		});
 	}
 

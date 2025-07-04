@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,14 @@ package org.springframework.boot.autoconfigure.condition;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
-import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebApplicationContext;
-import org.springframework.boot.web.reactive.server.MockReactiveWebServerFactory;
-import org.springframework.boot.web.reactive.server.ReactiveWebServerFactory;
-import org.springframework.boot.web.servlet.context.AnnotationConfigServletWebApplicationContext;
+import org.springframework.boot.web.context.reactive.AnnotationConfigReactiveWebApplicationContext;
+import org.springframework.boot.web.context.servlet.AnnotationConfigServletWebApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.mock.web.MockServletContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,16 +110,6 @@ class ConditionalOnWebApplicationTests {
 		@Bean
 		String reactive() {
 			return "reactive";
-		}
-
-		@Bean
-		ReactiveWebServerFactory reactiveWebServerFactory() {
-			return new MockReactiveWebServerFactory();
-		}
-
-		@Bean
-		HttpHandler httpHandler() {
-			return (request, response) -> Mono.empty();
 		}
 
 	}

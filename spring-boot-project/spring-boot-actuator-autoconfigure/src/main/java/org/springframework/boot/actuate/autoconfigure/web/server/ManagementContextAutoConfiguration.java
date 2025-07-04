@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.springframework.boot.actuate.autoconfigure.web.server;
 import java.util.Map;
 
 import org.springframework.beans.factory.SmartInitializingSingleton;
-import org.springframework.boot.actuate.autoconfigure.web.ManagementContextFactory;
 import org.springframework.boot.actuate.autoconfigure.web.ManagementContextType;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -48,7 +47,6 @@ import org.springframework.util.Assert;
  */
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-@EnableConfigurationProperties(ManagementServerProperties.class)
 public class ManagementContextAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
@@ -101,6 +99,7 @@ public class ManagementContextAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnManagementPort(ManagementPortType.DIFFERENT)
+	@EnableConfigurationProperties(ManagementServerProperties.class)
 	static class DifferentManagementContextConfiguration {
 
 		@Bean

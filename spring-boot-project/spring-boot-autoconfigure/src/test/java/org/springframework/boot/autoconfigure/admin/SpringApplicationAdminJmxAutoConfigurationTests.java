@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2023 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,8 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -109,21 +106,6 @@ class SpringApplicationAdminJmxAutoConfigurationTests {
 	}
 
 	@Test
-	void registerWithSimpleWebApp() throws Exception {
-		try (ConfigurableApplicationContext context = new SpringApplicationBuilder()
-			.sources(ServletWebServerFactoryAutoConfiguration.class, DispatcherServletAutoConfiguration.class,
-					MultipleMBeanExportersConfiguration.class, SpringApplicationAdminJmxAutoConfiguration.class)
-			.run("--" + ENABLE_ADMIN_PROP, "--server.port=0")) {
-			assertThat(context).isInstanceOf(ServletWebServerApplicationContext.class);
-			assertThat(this.server.getAttribute(createDefaultObjectName(), "EmbeddedWebApplication"))
-				.isEqualTo(Boolean.TRUE);
-			int expected = ((ServletWebServerApplicationContext) context).getWebServer().getPort();
-			String actual = getProperty(createDefaultObjectName(), "local.server.port");
-			assertThat(actual).isEqualTo(String.valueOf(expected));
-		}
-	}
-
-	@Test
 	void onlyRegisteredOnceWhenThereIsAChildContext() {
 		SpringApplicationBuilder parentBuilder = new SpringApplicationBuilder().web(WebApplicationType.NONE)
 			.sources(MultipleMBeanExportersConfiguration.class, SpringApplicationAdminJmxAutoConfiguration.class);
@@ -149,11 +131,6 @@ class SpringApplicationAdminJmxAutoConfigurationTests {
 		catch (MalformedObjectNameException ex) {
 			throw new IllegalStateException("Invalid jmx name " + jmxName, ex);
 		}
-	}
-
-	private String getProperty(ObjectName objectName, String key) throws Exception {
-		return (String) this.server.invoke(objectName, "getProperty", new Object[] { key },
-				new String[] { String.class.getName() });
 	}
 
 	@Configuration(proxyBeanMethods = false)

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-present the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the License);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 plugins {
 	id "org.springframework.boot.bom"
 	id "org.springframework.boot.deployed"
@@ -338,7 +354,7 @@ bom {
 			releaseNotes("https://github.com/ehcache/ehcache3/releases/tag/v{version}")
 		}
 	}
-	library("Elasticsearch Client", "9.0.2") {
+	library("Elasticsearch Client", "9.0.3") {
 		prohibit {
 			contains "-alpha"
 			contains "-beta"
@@ -369,7 +385,7 @@ bom {
 			javadoc("elasticsearch-rest-client-sniffer", version -> "https://artifacts.elastic.co/javadoc/org/elasticsearch/client/elasticsearch-rest-client-sniffer/%s".formatted(version), "org.elasticsearch.client.sniff")
 		}
 	}
-	library("Flyway", "11.7.2") {
+	library("Flyway", "11.9.2") {
 		group("org.flywaydb") {
 			modules = [
 				"flyway-commandline",
@@ -535,7 +551,7 @@ bom {
 			releaseNotes("https://github.com/hazelcast/hazelcast/releases/tag/v{version}")
 		}
 	}
-	library("Hibernate", "7.0.0.CR1") {
+	library("Hibernate", "7.0.2.Final") {
 		group("org.hibernate.orm") {
 			modules = [
 				"hibernate-agroal",
@@ -567,7 +583,7 @@ bom {
 				.formatted(version.major(), version.minor()))
 		}
 	}
-	library("Hibernate Validator", "9.0.0.CR1") {
+	library("Hibernate Validator", "9.0.1.Final") {
 		group("org.hibernate.validator") {
 			modules = [
 				"hibernate-validator",
@@ -1317,7 +1333,7 @@ bom {
 			releaseNotes("https://github.com/apache/maven-assembly-plugin/releases/tag/maven-assembly-plugin-{version}")
 		}
 	}
-	library("Maven Clean Plugin", "3.4.1") {
+	library("Maven Clean Plugin", "3.5.0") {
 		prohibit {
 			contains "-beta-"
 			because "we don't want betas"
@@ -1616,7 +1632,7 @@ bom {
 			]
 		}
 	}
-	library("Neo4j Java Driver", "5.28.5") {
+	library("Neo4j Java Driver", "5.28.7") {
 		alignWith {
 			version {
 				from "org.springframework.data:spring-data-neo4j"
@@ -1967,20 +1983,97 @@ bom {
 		group("org.springframework.boot") {
 			modules = [
 				"spring-boot",
+				"spring-boot-activemq",
 				"spring-boot-actuator",
 				"spring-boot-actuator-autoconfigure",
+				"spring-boot-amqp",
+				"spring-boot-artemis",
 				"spring-boot-autoconfigure",
+				"spring-boot-autoconfigure-classic",
 				"spring-boot-autoconfigure-processor",
+				"spring-boot-batch",
 				"spring-boot-buildpack-platform",
+				"spring-boot-cache",
+				"spring-boot-cassandra",
+				"spring-boot-cloudfoundry",
 				"spring-boot-configuration-metadata",
 				"spring-boot-configuration-processor",
+				"spring-boot-couchbase",
+				"spring-boot-data-cassandra",
+				"spring-boot-data-commons",
+				"spring-boot-data-couchbase",
+				"spring-boot-data-elasticsearch",
+				"spring-boot-data-jdbc",
+				"spring-boot-data-jpa",
+				"spring-boot-data-ldap",
+				"spring-boot-data-mongodb",
+				"spring-boot-data-neo4j",
+				"spring-boot-data-r2dbc",
+				"spring-boot-data-redis",
+				"spring-boot-data-rest",
 				"spring-boot-devtools",
 				"spring-boot-docker-compose",
+				"spring-boot-elasticsearch",
+				"spring-boot-flyway",
+				"spring-boot-freemarker",
+				"spring-boot-graphql",
+				"spring-boot-graphql-test",
+				"spring-boot-groovy-templates",
+				"spring-boot-gson",
+				"spring-boot-h2console",
+				"spring-boot-hateoas",
+				"spring-boot-hazelcast",
+				"spring-boot-health",
+				"spring-boot-hibernate",
+				"spring-boot-http-client",
+				"spring-boot-http-codec",
+				"spring-boot-http-converter",
+				"spring-boot-integration",
+				"spring-boot-jackson",
 				"spring-boot-jarmode-tools",
+				"spring-boot-jdbc",
+				"spring-boot-jersey",
+				"spring-boot-jetty",
+				"spring-boot-jms",
+				"spring-boot-jooq",
+				"spring-boot-jpa",
+				"spring-boot-jsonb",
+				"spring-boot-kafka",
+				"spring-boot-ldap",
+				"spring-boot-liquibase",
 				"spring-boot-loader",
 				"spring-boot-loader-classic",
 				"spring-boot-loader-tools",
+				"spring-boot-mail",
+				"spring-boot-metrics",
+				"spring-boot-mongodb",
+				"spring-boot-mustache",
+				"spring-boot-neo4j",
+				"spring-boot-netty",
+				"spring-boot-observation",
+				"spring-boot-opentelemetry",
 				"spring-boot-properties-migrator",
+				"spring-boot-pulsar",
+				"spring-boot-quartz",
+				"spring-boot-r2dbc",
+				"spring-boot-reactor",
+				"spring-boot-reactor-netty",
+				"spring-boot-restclient",
+				"spring-boot-restclient-test",
+				"spring-boot-rsocket",
+				"spring-boot-security",
+				"spring-boot-security-oauth2-authorization-server",
+				"spring-boot-security-oauth2-client",
+				"spring-boot-security-oauth2-resource-server",
+				"spring-boot-security-saml2",
+				"spring-boot-sendgrid",
+				"spring-boot-servlet",
+				"spring-boot-session",
+				"spring-boot-session-data-mongodb",
+				"spring-boot-session-data-redis",
+				"spring-boot-session-hazelcast",
+				"spring-boot-session-jdbc",
+				"spring-boot-sql",
 				"spring-boot-starter",
 				"spring-boot-starter-activemq",
 				"spring-boot-starter-actuator",
@@ -2038,7 +2131,21 @@ bom {
 				"spring-boot-starter-websocket",
 				"spring-boot-test",
 				"spring-boot-test-autoconfigure",
-				"spring-boot-testcontainers"
+				"spring-boot-testcontainers",
+				"spring-boot-thymeleaf",
+				"spring-boot-tomcat",
+				"spring-boot-tracing",
+				"spring-boot-tx",
+				"spring-boot-undertow",
+				"spring-boot-validation",
+				"spring-boot-webclient",
+				"spring-boot-webflux",
+				"spring-boot-webmvc",
+				"spring-boot-webservices",
+				"spring-boot-websocket",
+				"spring-boot-web-server",
+				"spring-boot-web-server-test",
+				"spring-boot-zipkin"
 			]
 			plugins = [
 				"spring-boot-maven-plugin"

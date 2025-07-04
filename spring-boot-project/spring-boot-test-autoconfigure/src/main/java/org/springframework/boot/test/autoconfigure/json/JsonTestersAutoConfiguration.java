@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.autoconfigure.jsonb.JsonbAutoConfiguration;
 import org.springframework.boot.test.json.AbstractJsonMarshalTester;
 import org.springframework.boot.test.json.BasicJsonTester;
 import org.springframework.boot.test.json.GsonTester;
@@ -62,8 +59,9 @@ import org.springframework.util.ReflectionUtils;
  * @since 1.4.0
  * @see AutoConfigureJsonTesters
  */
-@AutoConfiguration(
-		after = { JacksonAutoConfiguration.class, GsonAutoConfiguration.class, JsonbAutoConfiguration.class })
+@AutoConfiguration(afterName = { "org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration",
+		"org.springframework.boot.jsonb.autoconfigure.JsonbAutoConfiguration",
+		"org.springframework.boot.gson.autoconfigure.GsonAutoConfiguration" })
 @ConditionalOnClass(name = "org.assertj.core.api.Assert")
 @ConditionalOnBooleanProperty("spring.test.jsontesters.enabled")
 public class JsonTestersAutoConfiguration {

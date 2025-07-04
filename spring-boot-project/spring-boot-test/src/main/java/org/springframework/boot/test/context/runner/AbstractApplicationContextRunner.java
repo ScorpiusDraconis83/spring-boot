@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,25 +110,9 @@ import org.springframework.util.CollectionUtils;
  */
 public abstract class AbstractApplicationContextRunner<SELF extends AbstractApplicationContextRunner<SELF, C, A>, C extends ConfigurableApplicationContext, A extends ApplicationContextAssertProvider<C>> {
 
-	private static final Class<?>[] NO_ADDITIONAL_CONTEXT_INTERFACES = {};
-
 	private final RunnerConfiguration<C> runnerConfiguration;
 
 	private final Function<RunnerConfiguration<C>, SELF> instanceFactory;
-
-	/**
-	 * Create a new {@link AbstractApplicationContextRunner} instance.
-	 * @param contextFactory the factory used to create the actual context
-	 * @param instanceFactory the factory used to create new instance of the runner
-	 * @since 2.6.0
-	 * @deprecated since 3.4.0 for removal in 4.0.0 in favor of
-	 * {@link #AbstractApplicationContextRunner(Function, Supplier, Class...)}
-	 */
-	@Deprecated(since = "3.4.0", forRemoval = true)
-	protected AbstractApplicationContextRunner(Supplier<C> contextFactory,
-			Function<RunnerConfiguration<C>, SELF> instanceFactory) {
-		this(instanceFactory, contextFactory, NO_ADDITIONAL_CONTEXT_INTERFACES);
-	}
 
 	/**
 	 * Create a new {@link AbstractApplicationContextRunner} instance.

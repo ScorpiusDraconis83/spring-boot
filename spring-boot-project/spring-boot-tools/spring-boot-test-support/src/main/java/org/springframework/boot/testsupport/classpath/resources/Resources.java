@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,7 @@ class Resources {
 		this.root = root;
 	}
 
-	Resources addPackage(Package root, String[] resourceNames) {
-		String packageName = root.getName();
+	Resources addPackage(String packageName, String[] resourceNames) {
 		Set<String> unmatchedNames = new HashSet<>(Arrays.asList(resourceNames));
 		withPathsForPackage(packageName, (packagePath) -> {
 			for (String resourceName : resourceNames) {

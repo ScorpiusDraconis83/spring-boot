@@ -1,0 +1,2 @@
+org.springframework.boot.data.autoconfigure.metrics.SpringDataRepositoryMetricsAutoConfiguration
+org.springframework.boot.data.autoconfigure.web.SpringDataWebAutoConfiguration

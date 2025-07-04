@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,6 @@
  */
 
 /**
- * Auto-configuration for the cache abstraction.
+ * Auto-configuration base classes for Caching support.
  */
 package org.springframework.boot.autoconfigure.cache;

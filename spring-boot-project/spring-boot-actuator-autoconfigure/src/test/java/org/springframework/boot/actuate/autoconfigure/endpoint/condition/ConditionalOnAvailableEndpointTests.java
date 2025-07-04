@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -229,12 +229,6 @@ class ConditionalOnAvailableEndpointTests {
 			});
 	}
 
-	@Test
-	void outcomeOnCloudFoundryShouldMatchAll() {
-		this.contextRunner.withPropertyValues("VCAP_APPLICATION:---")
-			.run((context) -> assertThat(context).hasBean("info").hasBean("health").hasBean("spring").hasBean("test"));
-	}
-
 	@Test // gh-21044
 	void outcomeWhenIncludeAllShouldMatchDashedEndpoint() {
 		this.contextRunner.withUserConfiguration(DashedEndpointConfiguration.class)
@@ -280,21 +274,6 @@ class ConditionalOnAvailableEndpointTests {
 	}
 
 	@Test
-	void whenDisabledAndAccessibleByDefaultEndpointIsNotAvailable() {
-		this.contextRunner.withUserConfiguration(DisabledButAccessibleEndpointConfiguration.class)
-			.withPropertyValues("management.endpoints.web.exposure.include=*")
-			.run((context) -> assertThat(context).doesNotHaveBean(DisabledButAccessibleEndpoint.class));
-	}
-
-	@Test
-	void whenDisabledAndAccessibleByDefaultEndpointCanBeAvailable() {
-		this.contextRunner.withUserConfiguration(DisabledButAccessibleEndpointConfiguration.class)
-			.withPropertyValues("management.endpoints.web.exposure.include=*",
-					"management.endpoints.access.default=unrestricted")
-			.run((context) -> assertThat(context).hasSingleBean(DisabledButAccessibleEndpoint.class));
-	}
-
-	@Test
 	@WithTestEndpointOutcomeExposureContributor
 	void exposureOutcomeContributorCanMakeEndpointAvailable() {
 		this.contextRunner.withPropertyValues("management.endpoints.test.exposure.include=test")
@@ -328,12 +307,6 @@ class ConditionalOnAvailableEndpointTests {
 
 	@Endpoint(id = "test-dashed")
 	static class DashedEndpoint {
-
-	}
-
-	@SuppressWarnings({ "deprecation", "removal" })
-	@Endpoint(id = "disabledbutaccessible", enableByDefault = false)
-	static class DisabledButAccessibleEndpoint {
 
 	}
 
@@ -432,17 +405,6 @@ class ConditionalOnAvailableEndpointTests {
 		@ConditionalOnAvailableEndpoint(endpoint = TestEndpoint.class, exposure = EndpointExposure.WEB)
 		String unexposed() {
 			return "unexposed";
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	static class DisabledButAccessibleEndpointConfiguration {
-
-		@Bean
-		@ConditionalOnAvailableEndpoint
-		DisabledButAccessibleEndpoint disabledButAccessible() {
-			return new DisabledButAccessibleEndpoint();
 		}
 
 	}

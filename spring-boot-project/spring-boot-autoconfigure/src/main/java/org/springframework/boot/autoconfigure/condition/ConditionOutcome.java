@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2025 the original author or authors.
+ * Copyright 2012-present the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,19 +146,6 @@ public class ConditionOutcome {
 	@Override
 	public String toString() {
 		return (this.message != null) ? this.message.toString() : "";
-	}
-
-	/**
-	 * Return the inverse of the specified condition outcome.
-	 * @param outcome the outcome to inverse
-	 * @return the inverse of the condition outcome
-	 * @since 1.3.0
-	 * @deprecated since 3.5.0 for removal in 4.0.0 in favor of
-	 * {@link #ConditionOutcome(boolean, ConditionMessage)}
-	 */
-	@Deprecated(since = "3.5.0", forRemoval = true)
-	public static ConditionOutcome inverse(ConditionOutcome outcome) {
-		return new ConditionOutcome(!outcome.isMatch(), outcome.getConditionMessage());
 	}
 
 }
